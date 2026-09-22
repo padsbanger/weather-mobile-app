@@ -1,6 +1,6 @@
 # Milestones
 
-M1 is complete and approved by the user. M2 is next; M3–M6 remain pending. Pause after each milestone and commit only after user approval.
+M1 is complete, approved and committed as `b25a8ff`. M2 is complete and approved, with emulator verification and remaining device checks documented below. M3–M6 remain pending. Pause after each milestone and commit only after user approval.
 
 ## M1 — Android foundation and base map
 - [x] Scaffold compatible Expo/React Native/TypeScript and MapLibre development build.
@@ -11,12 +11,12 @@ M1 is complete and approved by the user. M2 is next; M3–M6 remain pending. Pau
 Exit: Android build opens a usable, pannable native map; no paid dependency silently introduced.
 
 ## M2 — Radar MVP
-- [ ] Validate live RainViewer metadata and real tiles; record source limitations.
-- [ ] Render precipitation over the map with opacity and provider-correct legend.
-- [ ] Add available-frame timeline, play/pause and selected time.
-- [ ] Add bounded weather preloading, caching, cancellation and app lifecycle behavior.
-- [ ] Handle source zoom, coverage, staleness, missing tiles and offline states.
-- [ ] Focused parser/playback tests and Android interaction checks.
+- [x] Validate live RainViewer metadata and real tiles; record source limitations.
+- [x] Render precipitation over the map with opacity and provider-correct legend.
+- [x] Add available-frame timeline, play/pause and selected time.
+- [x] Add bounded weather preloading, caching, cancellation and app lifecycle behavior.
+- [x] Handle source zoom, coverage, staleness, missing tiles and offline states.
+- [x] Focused parser/playback tests and Android interaction checks.
 Exit: live rain history is usable during pan/zoom; errors never appear as dry weather. Light mode only.
 
 ## M3 — Location and forecast
@@ -130,3 +130,63 @@ For each completed milestone record: changes, commands/checks actually run, devi
 
 - User confirmed: "Looks good. MIlestone complete." M1 is approved for commit;
   continue with M2 and pause again before its commit.
+
+### M2 — 2026-09-22 — complete and approved
+
+- Added live RainViewer metadata parsing, normalized past frames, available-frame
+  timeline/playback, persisted opacity/layer visibility, visible attribution,
+  source-correct Universal Blue reflectivity legend and coverage caveat.
+- Updated the layout toward `ui mockup.png` / 01 LIGHT: compact rounded location
+  control, Rain pill, circular map buttons and white bottom playback panel.
+  App copy remains English. No dark mode, future radar, warning or lightning UI.
+- Live smoke at 15:17:43 UTC validated 13 metadata frames and actual Gdynia PNG
+  bytes at supported zoom 7. Response host and opaque hash paths are used intact.
+  Native requests during playback also confirmed radar zoom 7 while map zoom
+  exceeded it. Full provider details and evidence paths are in PROVIDERS.md.
+- Metadata refreshes every five foreground minutes, with bounded retry backoff,
+  timeouts and cancellation. Cached metadata keeps its original fetch time.
+  Selected composite time is separate from successful fetch time. Empty, partial,
+  old-history, older-selected-frame, offline and failure notices are distinct.
+- At most one adjacent frame is staged under the opaque basemap, with the prior
+  frame visible until native readiness. Unique staging IDs reject late callbacks;
+  camera movement cancels staging and waits 350 ms after settling to restart it.
+  Duplicate native readiness events do not reset the playback dwell timer.
+- Expanded the version-pinned native patch to report installed staging layer IDs
+  on full-frame rendering and enforce an 80 radar tile requests/minute process
+  budget. The documented provider ceiling is 100 requests/IP/minute. No bulk
+  downloads, offline packs or basemap preloading. The patch contains only two
+  Kotlin source files; generated build artifacts were excluded and reverse-apply
+  validation passed. Rebuild the native client after pulling this milestone.
+- Passed: typecheck, lint, seven focused tests, Expo Doctor (21/21), native Android
+  build/install, metadata + tile smoke. The focused tests cover ordering, duplicate
+  frames, malformed/empty metadata, safe hosts/paths, timestamps, freshness boundary,
+  retry limits, available-frame wrapping, late callbacks, readiness, cancellation,
+  and retained imagery after failure. Node prints a harmless TS module-detection
+  warning during the tests; no test failed.
+- Emulator: Pixel_10 / Android 16 API 36 / x86_64. Verified actual radar rendering,
+  playback advancing through history during pan/zoom, timeline interaction,
+  expanded details with separate local timestamps, opacity adjustment, offline
+  cached imagery plus status, reconnect/update, and Home/resume pausing playback.
+- A native tile 429 occurred during interaction testing: playback paused, the
+  15:50 frame remained displayed, and the UI reported unavailable tiles instead
+  of dry weather. The native limit/failure path was exercised rather than a fake
+  radar image. Added a retry countdown and suppressed the handled dev LogBox so
+  it cannot cover the playback controls. No unsupported source zoom appeared in
+  the inspected native radar request logs.
+- Local evidence: `artifacts/rainviewer-smoke.json`, `rainviewer-metadata.json`,
+  `rainviewer-tile.png`, `m2-map.png`, `m2-offline.png`, `m2-rate-limit.xml`,
+  `m2-play-resume.xml`, `m2-opacity.xml`, and `m2-build.log`.
+- Remaining device coverage: physical phone, TalkBack/larger fonts, prolonged
+  memory/performance run, specifically injected 404/transparent/malformed tile
+  bodies, and forced stale-provider clock scenarios. Staleness is verified by
+  focused boundary tests; historical-frame age is displayed in the emulator.
+  Coverage-mask integration is deferred in favor of the allowed persistent caveat.
+  Full render readiness can wait on basemap tiles; failure/timeout retains the
+  last frame and requires another selection. M6 standalone APK remains pending.
+- Stop for M2 user review before committing. M1 commit remains `b25a8ff`.
+
+### M2 approval — 2026-09-22
+
+- User confirmed: "Looks good. MIlestone complete." M2 is approved for commit.
+- The requested M1–M2 radar slice is complete. Remaining device checks above
+  remain outstanding; approval does not mark them as tested. M3–M6 are pending.

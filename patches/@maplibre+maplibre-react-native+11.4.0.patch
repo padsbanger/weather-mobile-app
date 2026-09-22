@@ -1,5 +1,5 @@
 diff --git a/node_modules/@maplibre/maplibre-react-native/android/src/main/java/org/maplibre/reactnative/components/mapview/MLRNMapView.kt b/node_modules/@maplibre/maplibre-react-native/android/src/main/java/org/maplibre/reactnative/components/mapview/MLRNMapView.kt
-index b088909..9a09e9a 100644
+index b088909..819d354 100644
 --- a/node_modules/@maplibre/maplibre-react-native/android/src/main/java/org/maplibre/reactnative/components/mapview/MLRNMapView.kt
 +++ b/node_modules/@maplibre/maplibre-react-native/android/src/main/java/org/maplibre/reactnative/components/mapview/MLRNMapView.kt
 @@ -92,7 +92,10 @@ open class MLRNMapView(
@@ -14,3 +14,67 @@ index b088909..9a09e9a 100644
      ),
      OnMapReadyCallback,
      MapLibreMap.OnMapClickListener,
+@@ -1568,6 +1571,16 @@ open class MLRNMapView(
+         val event =
+             if (withViewState == true) {
+                 MapChangeEvent(surfaceId, id, eventName, makeViewState(null))
++            } else if (eventName == "onDidFinishRenderingFrameFully") {
++                // Tag readiness with layers actually installed in this native frame.
++                // JS ignores events from sources removed by a later scrub/camera change.
++                val data = Arguments.createMap()
++                val ready = Arguments.createArray()
++                mapLibreMap?.style?.layers?.forEach { layer ->
++                    if (layer.id.startsWith("radar-preload-")) ready.pushString(layer.id)
++                }
++                data.putArray("radarReady", ready)
++                MapChangeEvent(surfaceId, id, eventName, data)
+             } else {
+                 MapChangeEvent(surfaceId, id, eventName)
+             }
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/src/main/java/org/maplibre/reactnative/modules/TransformRequestInterceptor.kt b/node_modules/@maplibre/maplibre-react-native/android/src/main/java/org/maplibre/reactnative/modules/TransformRequestInterceptor.kt
+index 7db7762..30abd94 100644
+--- a/node_modules/@maplibre/maplibre-react-native/android/src/main/java/org/maplibre/reactnative/modules/TransformRequestInterceptor.kt
++++ b/node_modules/@maplibre/maplibre-react-native/android/src/main/java/org/maplibre/reactnative/modules/TransformRequestInterceptor.kt
+@@ -6,6 +6,9 @@ import okhttp3.HttpUrl
+ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+ import okhttp3.Interceptor
+ import okhttp3.Response
++import okhttp3.Protocol
++import okhttp3.ResponseBody.Companion.toResponseBody
++import android.os.SystemClock
+ import java.io.IOException
+ import kotlin.collections.iterator
+ 
+@@ -28,6 +31,18 @@ data class HeaderConfig(
+ )
+ 
+ class TransformRequestInterceptor : Interceptor {
++    // RainViewer's published ceiling is 100 requests/IP/minute. Leave room for
++    // metadata and other clients. Cached native resources do not reach this code.
++    private val radarRequests = java.util.ArrayDeque<Long>()
++
++    @Synchronized
++    private fun allowRadarRequest(): Boolean {
++        val now = SystemClock.elapsedRealtime()
++        while (radarRequests.isNotEmpty() && radarRequests.peekFirst() <= now - 60000) radarRequests.removeFirst()
++        if (radarRequests.size >= 80) return false
++        radarRequests.addLast(now)
++        return true
++    }
+     private val urlTransforms: LinkedHashMap<String, UrlTransformConfig> = LinkedHashMap()
+     private val urlSearchParams: LinkedHashMap<String, UrlSearchParamConfig> = LinkedHashMap()
+     private val headers: LinkedHashMap<String, HeaderConfig> = LinkedHashMap()
+@@ -102,6 +117,13 @@ class TransformRequestInterceptor : Interceptor {
+     override fun intercept(chain: Interceptor.Chain): Response {
+         var request = chain.request()
+ 
++        if ((request.url.host == "rainviewer.com" || request.url.host.endsWith(".rainviewer.com")) && !allowRadarRequest()) {
++            jsLogger?.invoke("warn", TAG, "Radar tile budget reached; retry after 60 seconds")
++            return Response.Builder().request(request).protocol(Protocol.HTTP_1_1)
++                .code(429).message("Radar tile budget reached").header("Retry-After", "60")
++                .body(ByteArray(0).toResponseBody()).build()
++        }
++
+         val hasConfig = urlTransforms.isNotEmpty() || urlSearchParams.isNotEmpty() || headers.isNotEmpty()
+         if (hasConfig) {
+             debugLog("Request: ${request.url}")

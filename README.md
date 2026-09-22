@@ -1,7 +1,7 @@
 # Weather Radar — Android
 
-Personal-use, English-language native map application. M1 implements the light
-map foundation. Radar is M2, subject to the owner's milestone review. No Expo Go,
+Personal-use, English-language native map and rain history application. M1 is
+approved; M2 adds live RainViewer tiles and playback for milestone review. No Expo Go,
 account, backend or API token is needed. This development app requires Metro;
 a standalone release APK is the separate M6 deliverable.
 
@@ -32,6 +32,7 @@ npm.cmd run lint
 npm.cmd test
 npx.cmd expo-doctor
 npm.cmd run smoke:map
+npm.cmd run smoke:radar
 
 # Start an Android Studio emulator, or connect a phone with USB debugging.
 # First build, and after native dependency/config changes:
@@ -71,7 +72,7 @@ The Android directory is generated and ignored. Keep durable changes in Expo
 configuration or the versioned dependency patch; never store signing keys in git.
 `npm ci` must run lifecycle scripts so the no-prefetch MapLibre patch is applied.
 
-## M1 behavior
+## App behavior
 
 The app opens at Gdynia or the last camera. Pan, zoom, use the coordinate picker,
 or tap ◎ to request one foreground location fix. Denial and unavailable GPS keep
@@ -81,6 +82,25 @@ when the app backgrounds. Camera writes are validated and serialized.
 Map loading/failure and network availability are separate states. Offline viewing
 can only show fragments already in the native cache. Neither an empty map nor a
 tile failure is weather information. Only completed features are exposed.
+
+The radar panel follows the leftmost light concept in `ui mockup.png`, with
+English copy. Use Play to animate available past frames or drag the timeline to
+select one. The displayed time stays with the actual displayed frame while a
+replacement loads. Pan/zoom preserves the map and cancels obsolete preloading.
+Rain toggles the layer; the information button opens opacity, timestamps and
+source details. Opacity and layer visibility persist locally.
+
+The legend uses RainViewer's Universal Blue dBZ colors, not the mockup's invented
+rainbow scale. This is observed composite history, with no nowcast. The coverage
+caveat explains why transparent tiles cannot prove dry weather. Selected old
+frames, outdated metadata, offline access, partial data and tile errors have
+distinct notices. Rate limits pause playback with a retry countdown. Backgrounding
+pauses playback and requests; returning refreshes freshness and preferences.
+
+`npm test` covers metadata validation, ordering/deduplication, timestamps, stale
+boundaries, retry timing, and playback readiness/cancellation/failure transitions.
+`smoke:radar` checks actual live metadata and a real supported-zoom PNG tile. It
+writes local evidence to `artifacts/`; never use it for batch tile downloading.
 
 Provider requirements, cache behavior and the native prefetch patch are described
 in [PROVIDERS.md](PROVIDERS.md). Progress and actual device verification are recorded

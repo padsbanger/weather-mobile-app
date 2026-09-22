@@ -49,8 +49,68 @@ after verification. Disabling Wi-Fi and mobile data retained the cached viewport
 and displayed the offline notice (translated to English after the initial M1 check). This does not provide offline download
 functionality or guarantee cache coverage.
 
-## Weather providers
+## Radar (M2): RainViewer
 
-RainViewer metadata, tiles, radar timestamps and weather source limitations
-will be verified in M2 after the requested M1 review checkpoint. There is no
-radar, forecast, warnings or lightning control in the M1 UI.
+Checked 2026-09-22 against the [API terms](https://www.rainviewer.com/api.html),
+[Weather Maps schema](https://www.rainviewer.com/api/weather-maps-api.html),
+[transition summary](https://www.rainviewer.com/api/transition-faq.html) and
+[color table](https://www.rainviewer.com/api/color-schemes.html).
+Personal use is permitted without an account/token. Visible linked RainViewer
+credit is included. Service availability and regional coverage are not guaranteed.
+
+The transition summary is stricter than the general FAQ: use past history only,
+Universal Blue (scheme 2), source zoom at most 7 and a 100 requests/IP/minute
+ceiling. The real response contained 13 past frames over two hours, with empty
+nowcast and satellite arrays. The application ignores those future/satellite
+fields. Tile URLs always use the returned HTTPS host and opaque frame path.
+The smoke check found hash-like paths, not timestamp paths.
+
+At 15:17:43 UTC, the live metadata described 13 frames from 13:10 to 15:10 UTC.
+The actual Gdynia tile at z7/x70/y40 returned a valid 256×256 PNG (2,316 bytes),
+HTTP 200 and `Cache-Control: max-age=172800`. Evidence and a tile image are saved
+by `npm run smoke:radar` under ignored `artifacts/`.
+
+Rendering uses 256-pixel source tiles, smoothing on and snow recoloring off
+(`2/1_0.png`). Native overscaling permits map zoom beyond 7 without requesting
+unsupported radar zoom levels. The legend samples the official Universal Blue
+rain column at 15, 20, 30, 35, 40, 45 and 50 dBZ, including the correct dark red
+at 50 dBZ. It represents reflectivity, not rainfall rate. Weak returns below
+15 dBZ can also appear; the legend is a sampled scale, not a coverage test.
+
+Frame time is composite generation time; contributing observations may be older.
+It is displayed separately from the last successful metadata fetch. A 20-minute
+threshold flags outdated history and older selected frames. Blank/transparent
+pixels do not establish dry weather. The coverage caveat is always visible;
+the provider's coverage mask is not yet integrated.
+
+### Loading, caching and request limits
+
+- Metadata is validated, sorted and deduplicated; malformed entries produce a
+  partial-history notice. Empty history is distinguished from a request failure.
+  Refresh at launch and every five foreground minutes; failures retry with
+  backoff from 15 seconds up to five minutes. Requests time out after 15 seconds
+  and are aborted when backgrounded/offline.
+- Persist usable metadata plus its original successful-fetch timestamp. Restore
+  it on launch, then refresh; cached data does not become fresh merely by loading
+  from disk. Native tiles retain provider caching headers and the ambient cache.
+- Stage one adjacent frame only during playback, underneath the opaque basemap.
+  This visible-to-the-renderer layer requests only current viewport weather
+  tiles, while the basemap covers it. Its display layer stays transparent until
+  native full-frame readiness. At most two weather sources exist: displayed and
+  staged. No second map, offline packs, region scans or basemap prefetch.
+- The versioned Android patch tags fully-rendered events with installed staging
+  layer IDs so late events cannot complete a newer scrub request. Source removal
+  cancels obsolete tile work after scrubbing or camera changes. Camera movement
+  suspends staging; backgrounding stops playback and native network access.
+- The same patch caps outbound RainViewer tile requests at 80 per rolling minute
+  per app process, leaving headroom for metadata. Excess requests receive a local
+  429/Retry-After response without contacting the provider. Shared-IP traffic
+  from other clients can still cause provider throttling. The UI pauses on tile
+  failure/rate limiting and retains the previously loaded frame, with a retry
+  notice. This budget does not guarantee availability.
+- A staged frame times out after 12 seconds; selecting another frame retries.
+  Loading/readiness is conservative: basemap loading can delay a radar transition.
+  The previous frame remains visible at its own timestamp; coverage/partial
+  notices remain necessary even for successfully rendered transparent tiles.
+
+Forecast, warnings and lightning remain outside the completed radar slice.

@@ -8,6 +8,9 @@ import { basemap, lightMapStyle } from '../../providers/basemap';
 import { CAMERA_KEY, DEFAULT_CAMERA, parseCamera, type SavedCamera } from '../../storage/camera';
 import { theme } from '../../theme/tokens';
 import { useRequestedLocation } from './useRequestedLocation';
+import { useRadar } from '../radar/useRadar';
+import { RadarLayers } from '../radar/RadarLayers';
+import { RadarPanel } from '../radar/RadarPanel';
 
 function Button({ label, children, onPress, disabled = false }: {
   label: string; children: React.ReactNode; onPress: () => void; disabled?: boolean;
@@ -22,6 +25,8 @@ export function MapScreen() {
   const insets = useSafeAreaInsets();
   const network = useNetInfo();
   const offline = network.isConnected === false || network.isInternetReachable === false;
+  const radar = useRadar(offline);
+  const radarTileError = radar.onTileError;
   const camera = useRef<CameraRef>(null);
   const current = useRef<SavedCamera>(DEFAULT_CAMERA);
   const writes = useRef(Promise.resolve());
@@ -43,11 +48,16 @@ export function MapScreen() {
       if (active) { current.current = saved ?? DEFAULT_CAMERA; setInitial(current.current); setCenter(current.current.center); }
     }).catch(() => { if (active) { setStorageError(true); setInitial(DEFAULT_CAMERA); } });
     LogManager.onLog(({ level, message }) => {
-      if ((level === 'error' || level === 'warn') && /tile|http|source/i.test(message) && !/cancel/i.test(message)) setMapError(true);
+      if ((level === 'error' || level === 'warn') && /tile|http|source/i.test(message) && !/cancel/i.test(message)) {
+        if (!/source radar-|rainviewer|radar tile budget/i.test(message)) setMapError(true);
+        if (!/source basemap|openstreetmap/i.test(message)) radarTileError(message);
+        if (__DEV__) console.info(`Map resource unavailable: ${message}`);
+        return true; // The app reports recoverable tile failures; avoid a blocking dev LogBox.
+      }
       return false;
     });
     return () => { active = false; LogManager.onLog(() => false); };
-  }, []);
+  }, [radarTileError]);
 
   useEffect(() => {
     if (loaded) return;
@@ -78,17 +88,24 @@ export function MapScreen() {
         logo={false} compass={false} touchRotate={false} touchPitch={false}
         onDidFinishLoadingMap={() => setLoaded(true)} onDidFailLoadingMap={() => setMapError(true)}
         onDidFinishRenderingMapFully={() => { setLoaded(true); setMapError(false); }}
+        onDidFinishRenderingFrameFully={({ nativeEvent }) => radar.onFullyRendered(nativeEvent)}
+        onRegionWillChange={({ nativeEvent }) => { if (nativeEvent.userInteraction || nativeEvent.animated) radar.cameraStart(); }}
         onRegionDidChange={({ nativeEvent }) => {
+          radar.cameraEnd();
           const value = parseCamera({ center: nativeEvent.center, zoom: nativeEvent.zoom });
           if (value) { setCenter(value.center); persist(value); }
         }}>
         <Camera ref={camera} initialViewState={initial} minZoom={2} maxZoom={18} />
+        <RadarLayers displayed={radar.displayed} staged={radar.staged} enabled={radar.enabled} opacity={radar.opacity} />
       </Map>}
       <View style={styles.top}>
         <Pressable accessibilityRole="button" accessibilityLabel="Choose a location on the map" style={styles.location}
           onPress={() => { setLatitude(center[1].toFixed(4)); setLongitude(center[0].toFixed(4)); setInputError(false); setModal(true); }}>
-          <Text style={styles.eyebrow}>SELECTED LOCATION</Text>
-          <Text style={styles.title}>{nearGdynia ? 'Gdynia' : `${center[1].toFixed(3)}°, ${center[0].toFixed(3)}°`} <Text style={styles.accent}>⌄</Text></Text>
+          <Text style={styles.title}>⌖  {nearGdynia ? 'Gdynia' : `${center[1].toFixed(3)}°, ${center[0].toFixed(3)}°`} <Text style={styles.accent}>⌄</Text></Text>
+        </Pressable>
+        <Pressable accessibilityRole="switch" accessibilityLabel="Rain radar layer" accessibilityState={{ checked: radar.enabled }}
+          onPress={() => radar.setEnabled(!radar.enabled)} style={[styles.rainPill, radar.enabled && styles.rainPillActive]}>
+          <Text style={[styles.rainText, radar.enabled && styles.rainTextActive]}>☂  Rain</Text>
         </Pressable>
         {(offline || mapError || !loaded) && <View accessibilityLiveRegion="polite" style={styles.notice}>
           {!loaded && !offline && !mapError && <ActivityIndicator color={theme.color.accent} />}
@@ -100,16 +117,18 @@ export function MapScreen() {
         <Button label="Zoom in" onPress={() => camera.current?.zoomTo(Math.min(18, current.current.zoom + 1), { duration: 250 })}>+</Button>
         <Button label="Zoom out" onPress={() => camera.current?.zoomTo(Math.max(2, current.current.zoom - 1), { duration: 250 })}>−</Button>
       </View>
-      <Pressable accessibilityRole="link" accessibilityLabel="OpenStreetMap copyright" style={styles.attribution}
-        onPress={() => { void Linking.openURL(basemap.attributionUrl); }}><Text style={styles.credit}>{basemap.attribution}</Text></Pressable>
+      <View style={styles.credits}>
+        <Pressable accessibilityRole="link" accessibilityLabel="OpenStreetMap copyright" style={styles.attribution}
+          onPress={() => { void Linking.openURL(basemap.attributionUrl); }}><Text style={styles.credit}>{basemap.attribution}</Text></Pressable>
+        <Pressable accessibilityRole="link" accessibilityLabel="Weather data by RainViewer" style={styles.attribution}
+          onPress={() => { void Linking.openURL('https://www.rainviewer.com/'); }}><Text style={styles.credit}>Radar by RainViewer</Text></Pressable>
+      </View>
     </View>
-    <View style={styles.panel}>
-      <View style={styles.handle} />
-      <Text style={styles.heading}>Weather map</Text>
-      <Text style={styles.body}>Pan the map to choose a location. Tap ◎ to find your location.</Text>
+    <View>
       {location.message && <Text accessibilityLiveRegion="polite" style={styles.feedback}>{location.message}</Text>}
       {storageError && <Text style={styles.feedback}>Settings could not be saved. The map may return to Gdynia when you restart the app.</Text>}
     </View>
+    <RadarPanel radar={radar} />
     <Modal visible={modal} transparent animationType="slide" onRequestClose={() => setModal(false)}>
       <View style={[styles.modalBackdrop, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.modalPanel}>
@@ -132,20 +151,23 @@ export function MapScreen() {
 const c = theme.color;
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: c.background },
-  mapArea: { flex: 1, minHeight: 180 },
+  mapArea: { flex: 1, minHeight: 240 },
   top: { position: 'absolute', top: 16, left: 16, right: 16, gap: 8 },
-  location: { backgroundColor: c.surface, borderRadius: 20, padding: 16, elevation: 3 },
+  location: { backgroundColor: c.surface, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12, elevation: 3, minHeight: 48 },
   eyebrow: { color: c.muted, fontSize: 11, letterSpacing: 1.4, fontWeight: '600' },
-  title: { color: c.text, fontSize: 23, fontWeight: '700', marginTop: 4 },
+  title: { color: c.text, fontSize: 18, fontWeight: '600' },
+  rainPill: { alignSelf: 'flex-start', backgroundColor: c.surface, borderRadius: 24, minHeight: 48, paddingHorizontal: 20, justifyContent: 'center', elevation: 2 },
+  rainPillActive: { backgroundColor: c.accent }, rainText: { color: c.text, fontSize: 16, fontWeight: '600' }, rainTextActive: { color: c.surface },
   accent: { color: c.accent },
   notice: { backgroundColor: c.surface, borderRadius: 12, padding: 12, flexDirection: 'row', gap: 8 },
   noticeText: { color: c.text, flex: 1, fontSize: 14 },
-  controls: { position: 'absolute', right: 16, top: '42%', gap: 8 },
-  button: { minWidth: 48, minHeight: 48, paddingHorizontal: 14, paddingVertical: 10, backgroundColor: c.surface, borderRadius: 16, borderWidth: 1, borderColor: c.border, justifyContent: 'center', alignItems: 'center' },
+  controls: { position: 'absolute', right: 16, bottom: 64, gap: 8 },
+  button: { minWidth: 48, minHeight: 48, paddingHorizontal: 14, paddingVertical: 10, backgroundColor: c.surface, borderRadius: 24, borderWidth: 1, borderColor: c.border, justifyContent: 'center', alignItems: 'center' },
   buttonText: { color: c.accent, fontSize: 22, fontWeight: '600' },
   dim: { opacity: 0.55 },
-  attribution: { position: 'absolute', bottom: 0, left: 0, minHeight: 48, justifyContent: 'center', paddingHorizontal: 12, backgroundColor: c.surface, borderTopRightRadius: 12 },
-  credit: { color: c.text, fontSize: 12 },
+  credits: { position: 'absolute', bottom: 0, left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-between', backgroundColor: c.surface },
+  attribution: { minHeight: 48, flexShrink: 1, justifyContent: 'center', paddingHorizontal: 8 },
+  credit: { color: c.text, fontSize: 10 },
   panel: { backgroundColor: c.surface, padding: 20, borderTopLeftRadius: 24, borderTopRightRadius: 24, borderTopWidth: 1, borderColor: c.border },
   handle: { width: 36, height: 4, borderRadius: 2, backgroundColor: c.border, alignSelf: 'center', marginBottom: 16 },
   heading: { fontSize: 23, fontWeight: '700', color: c.text },
