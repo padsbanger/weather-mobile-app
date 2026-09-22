@@ -32,7 +32,8 @@
     "test": "node --test tests/*.test.ts",
     "postinstall": "patch-package",
     "smoke:map": "node scripts/smoke-map.mjs",
-    "smoke:radar": "node scripts/smoke-radar.mjs"
+    "smoke:radar": "node scripts/smoke-radar.mjs",
+    "smoke:forecast": "node scripts/smoke-forecast.mjs"
   },
   "private": true
 }

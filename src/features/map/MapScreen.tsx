@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNetInfo } from '@react-native-community/netinfo';
@@ -11,6 +11,9 @@ import { useRequestedLocation } from './useRequestedLocation';
 import { useRadar } from '../radar/useRadar';
 import { RadarLayers } from '../radar/RadarLayers';
 import { RadarPanel } from '../radar/RadarPanel';
+import { LocationPicker } from './LocationPicker';
+import { ForecastSheet } from '../forecast/ForecastSheet';
+import { type Place } from '../../providers/openMeteo';
 
 function Button({ label, children, onPress, disabled = false }: {
   label: string; children: React.ReactNode; onPress: () => void; disabled?: boolean;
@@ -36,9 +39,8 @@ export function MapScreen() {
   const [mapError, setMapError] = useState(false);
   const [storageError, setStorageError] = useState(false);
   const [modal, setModal] = useState(false);
-  const [latitude, setLatitude] = useState('54.5189');
-  const [longitude, setLongitude] = useState('18.5380');
-  const [inputError, setInputError] = useState(false);
+  const [forecastPlace, setForecastPlace] = useState<Place | null>(null);
+  const [namedPlace, setNamedPlace] = useState<Place | null>(null);
   const location = useRequestedLocation((coordinates) => camera.current?.easeTo({ center: coordinates, zoom: 11, duration: 500 }));
 
   useEffect(() => {
@@ -72,16 +74,16 @@ export function MapScreen() {
       .catch(() => { setStorageError(true); });
   }
 
-  function selectCoordinates() {
-    const lat = latitude.trim().replace(',', '.');
-    const lon = longitude.trim().replace(',', '.');
-    const selected = lat && lon ? parseCamera({ center: [Number(lon), Number(lat)], zoom: 10 }) : null;
-    if (!selected) { setInputError(true); return; }
-    camera.current?.easeTo({ ...selected, duration: 400 });
+  function selectPlace(place: Place) {
+    setNamedPlace(place); setCenter(place.center);
+    camera.current?.easeTo({ center: place.center, zoom: 10, duration: 400 });
     setModal(false);
   }
 
   const nearGdynia = Math.abs(center[0] - 18.538) < 0.02 && Math.abs(center[1] - 54.5189) < 0.02;
+  const placeName = namedPlace && Math.abs(center[0] - namedPlace.center[0]) < 0.001 && Math.abs(center[1] - namedPlace.center[1]) < 0.001
+    ? namedPlace.name : nearGdynia ? 'Gdynia' : `${center[1].toFixed(3)}°, ${center[0].toFixed(3)}°`;
+  function openSheet() { if (radar.playing) radar.togglePlay(); }
   return <View style={[styles.screen, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
     <View style={styles.mapArea}>
       {initial && <Map mapStyle={lightMapStyle} style={StyleSheet.absoluteFill} attribution={false}
@@ -100,13 +102,15 @@ export function MapScreen() {
       </Map>}
       <View style={styles.top}>
         <Pressable accessibilityRole="button" accessibilityLabel="Choose a location on the map" style={styles.location}
-          onPress={() => { setLatitude(center[1].toFixed(4)); setLongitude(center[0].toFixed(4)); setInputError(false); setModal(true); }}>
-          <Text style={styles.title}>⌖  {nearGdynia ? 'Gdynia' : `${center[1].toFixed(3)}°, ${center[0].toFixed(3)}°`} <Text style={styles.accent}>⌄</Text></Text>
+          onPress={() => { openSheet(); setModal(true); }}>
+          <Text style={styles.title}>⌖  {placeName} <Text style={styles.accent}>⌄</Text></Text>
         </Pressable>
-        <Pressable accessibilityRole="switch" accessibilityLabel="Rain radar layer" accessibilityState={{ checked: radar.enabled }}
+        <View style={styles.layerRow}><Pressable accessibilityRole="switch" accessibilityLabel="Rain radar layer" accessibilityState={{ checked: radar.enabled }}
           onPress={() => radar.setEnabled(!radar.enabled)} style={[styles.rainPill, radar.enabled && styles.rainPillActive]}>
           <Text style={[styles.rainText, radar.enabled && styles.rainTextActive]}>☂  Rain</Text>
         </Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel="Forecast for map center" style={styles.rainPill}
+          onPress={() => { openSheet(); setForecastPlace({ name: placeName, center }); }}><Text style={styles.rainText}>Forecast</Text></Pressable></View>
         {(offline || mapError || !loaded) && <View accessibilityLiveRegion="polite" style={styles.notice}>
           {!loaded && !offline && !mapError && <ActivityIndicator color={theme.color.accent} />}
           <Text style={styles.noticeText}>{offline ? 'Offline · only previously loaded map areas are available.' : mapError ? 'The map could not load completely. Some areas may be missing.' : 'Loading map…'}</Text>
@@ -129,22 +133,8 @@ export function MapScreen() {
       {storageError && <Text style={styles.feedback}>Settings could not be saved. The map may return to Gdynia when you restart the app.</Text>}
     </View>
     <RadarPanel radar={radar} />
-    <Modal visible={modal} transparent animationType="slide" onRequestClose={() => setModal(false)}>
-      <View style={[styles.modalBackdrop, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.modalPanel}>
-          <Text style={styles.heading}>Choose a location</Text>
-          <Text style={styles.body}>Enter coordinates, or close this panel and pan the map.</Text>
-          <Text style={styles.label}>Latitude (−85 to 85)</Text>
-          <TextInput accessibilityLabel="Latitude" value={latitude} onChangeText={setLatitude} style={styles.input} keyboardType="numbers-and-punctuation" />
-          <Text style={styles.label}>Longitude (−180 to 180)</Text>
-          <TextInput accessibilityLabel="Longitude" value={longitude} onChangeText={setLongitude} style={styles.input} keyboardType="numbers-and-punctuation" />
-          {inputError && <Text accessibilityLiveRegion="polite" style={styles.feedback}>Enter valid coordinates within the given ranges.</Text>}
-          <Button label="Show selected location" onPress={selectCoordinates}>Show on map</Button>
-          <Button label="Return to Gdynia" onPress={() => { camera.current?.easeTo({ ...DEFAULT_CAMERA, duration: 400 }); setModal(false); }}>Gdynia</Button>
-          <Button label="Close location picker" onPress={() => setModal(false)}>Close</Button>
-        </ScrollView>
-      </View>
-    </Modal>
+    {modal && <LocationPicker current={{ name: placeName, center }} offline={offline} onSelect={selectPlace} onClose={() => setModal(false)} />}
+    {forecastPlace && <ForecastSheet place={forecastPlace} offline={offline} onClose={() => setForecastPlace(null)} />}
   </View>;
 }
 
@@ -153,6 +143,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: c.background },
   mapArea: { flex: 1, minHeight: 240 },
   top: { position: 'absolute', top: 16, left: 16, right: 16, gap: 8 },
+  layerRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   location: { backgroundColor: c.surface, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12, elevation: 3, minHeight: 48 },
   eyebrow: { color: c.muted, fontSize: 11, letterSpacing: 1.4, fontWeight: '600' },
   title: { color: c.text, fontSize: 18, fontWeight: '600' },

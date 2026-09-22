@@ -1,7 +1,8 @@
 # Weather Radar — Android
 
 Personal-use, English-language native map and rain history application. M1 is
-approved; M2 adds live RainViewer tiles and playback for milestone review. No Expo Go,
+approved; M2 is approved and committed. M3 adds location search, favorites and an
+hourly forecast sheet for review. No Expo Go,
 account, backend or API token is needed. This development app requires Metro;
 a standalone release APK is the separate M6 deliverable.
 
@@ -33,6 +34,7 @@ npm.cmd test
 npx.cmd expo-doctor
 npm.cmd run smoke:map
 npm.cmd run smoke:radar
+npm.cmd run smoke:forecast
 
 # Start an Android Studio emulator, or connect a phone with USB debugging.
 # First build, and after native dependency/config changes:
@@ -105,6 +107,38 @@ writes local evidence to `artifacts/`; never use it for batch tile downloading.
 Provider requirements, cache behavior and the native prefetch patch are described
 in [PROVIDERS.md](PROVIDERS.md). Progress and actual device verification are recorded
 in [MILESTONES.md](MILESTONES.md).
+
+## Locations and forecast (M3)
+
+Tap the location bar to search by city/postal code, enter coordinates, or select
+a saved favorite. Search runs only on submission and requests English results.
+To save a search result, select it, reopen the location picker and choose
+"Save current location". Favorites can be named and removed; up to 20 are stored
+on the device. Favorites and coordinates work offline. A place name may fall
+back to coordinates after restart; the camera and favorites remain persisted.
+
+The Forecast button opens hourly model predictions for the current map center.
+The location is captured when the sheet opens; opening/closing it preserves the
+map camera and radar frame. Opening either sheet pauses radar playback.
+The next 24 hourly endpoints show temperature (°C), precipitation probability
+(%), precipitation amount (mm, including snow water equivalent) and wind at 10 m
+(km/h). Times use the returned location timezone, including offset changes.
+The download timestamp is separate from forecast times and is not a model run time.
+
+Forecast requests use coordinates rounded to 0.01°, cache up to 12 locations,
+and refresh after 30 minutes while the sheet is open and the app is foregrounded.
+Backgrounding/closing cancels pending requests. Failures retry with backoff;
+reopening also retries stale data. Saved data retains its timestamp, missing
+values remain "Unavailable", and expired time ranges are not shown as upcoming.
+An offline location without saved data is explicitly reported. Forecast and
+search errors do not change observed radar data.
+
+No new packages or native configuration were needed for M3. With the M2 native
+client installed, start Metro using the commands above. `npm.cmd run smoke:forecast`
+verifies actual English geocoding and hourly forecast responses; artifacts are
+written under `artifacts/`. M3 checks: typecheck, lint, 11 tests, Android build
+and emulator interactions. Physical phone, TalkBack/large fonts and prolonged
+lifecycle checks remain pending; see MILESTONES.md for the exact coverage.
 
 ## Dependency audit
 

@@ -114,3 +114,36 @@ the provider's coverage mask is not yet integrated.
   notices remain necessary even for successfully rendered transparent tiles.
 
 Forecast, warnings and lightning remain outside the completed radar slice.
+# Open-Meteo forecast and geocoding (M3)
+
+Verified 2026-09-22 against the official [forecast docs](https://open-meteo.com/en/docs),
+[geocoding docs](https://open-meteo.com/en/docs/geocoding-api),
+[terms](https://open-meteo.com/en/terms) and [pricing](https://open-meteo.com/en/pricing).
+The free endpoints support personal noncommercial use without an API key.
+Published limits: fewer than 10,000 calls/day, 5,000/hour and 600/minute; no uptime
+guarantee. Commercial distribution requires revisiting the plan and terms.
+Attribution is CC BY 4.0: forecast links to Open-Meteo; search credits Open-Meteo
+and the underlying GeoNames location data. English results are requested, but
+proper place names can fall back to native names where translations are absent.
+
+- Geocoding: `https://geocoding-api.open-meteo.com/v1/search`, explicit submit,
+  minimum two characters, eight results, `language=en`. No location permission
+  needed. Query changes, sheet closure and backgrounding cancel obsolete requests.
+- Forecast: `https://api.open-meteo.com/v1/forecast`, rounded coordinates (0.01°),
+  `temperature_2m,precipitation_probability,precipitation,wind_speed_10m`, explicit
+  Celsius/mm/kmh units, `timezone=auto`, `timeformat=unixtime`, three days requested
+  to cover the next 24 hours even late in the day. Unix timestamps are UTC instants;
+  format with the returned IANA timezone, never manually add an offset.
+- The parser validates units, array lengths, hourly ordering, dates, timezone and
+  numeric ranges. Null values remain missing. Precipitation refers to the preceding
+  hour; probability means more than 0.1 mm. This is model output, not observed radar.
+- A 30-minute persistent cache retains at most 12 locations, with original fetch
+  timestamps. Refresh only while the forecast sheet is open and foregrounded.
+  Requests time out after 15 seconds; failures back off from 30 seconds to 5 minutes.
+  Cached data remains visible with error/stale status; unavailable locations and
+  expired ranges have explicit empty states. No forecast background service.
+- `npm.cmd run smoke:forecast` on 2026-09-22 at 16:49:29 UTC validated actual
+  Gdynia results (54.51889, 18.53188) and 72 hourly entries in Europe/Warsaw,
+  with all four requested fields and no null values in that particular response.
+  Evidence: `artifacts/open-meteo-search.json`, `open-meteo-forecast.json` and
+  `open-meteo-smoke.json`. No weather values are hardcoded into the app.

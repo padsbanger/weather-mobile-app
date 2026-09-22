@@ -1,6 +1,6 @@
 # Milestones
 
-M1 is complete, approved and committed as `b25a8ff`. M2 is complete and approved, with emulator verification and remaining device checks documented below. M3–M6 remain pending. Pause after each milestone and commit only after user approval.
+M1 is complete, approved and committed as `b25a8ff`. M2 is complete, approved and committed as `b9d9dc1`. M3 is complete and approved; verified checks and remaining device coverage are recorded below. M4–M6 remain pending. Pause after each milestone and commit only after user approval.
 
 ## M1 — Android foundation and base map
 - [x] Scaffold compatible Expo/React Native/TypeScript and MapLibre development build.
@@ -20,9 +20,9 @@ Exit: Android build opens a usable, pannable native map; no paid dependency sile
 Exit: live rain history is usable during pan/zoom; errors never appear as dry weather. Light mode only.
 
 ## M3 — Location and forecast
-- [ ] Manual location search/selection with persisted favorites; document geocoding source.
-- [ ] Open-Meteo hourly forecast for selected location in a secondary sheet.
-- [ ] Explicit timezone, units, source credit, caching and stale/error behavior.
+- [x] Manual location search/selection with persisted favorites; document geocoding source.
+- [x] Open-Meteo hourly forecast for selected location in a secondary sheet.
+- [x] Explicit timezone, units, source credit, caching and stale/error behavior.
 Exit: observed radar and model forecast are clearly distinguished.
 
 ## M4 — IMGW warnings
@@ -190,3 +190,49 @@ For each completed milestone record: changes, commands/checks actually run, devi
 - User confirmed: "Looks good. MIlestone complete." M2 is approved for commit.
 - The requested M1–M2 radar slice is complete. Remaining device checks above
   remain outstanding; approval does not mark them as tested. M3–M6 are pending.
+
+### M3 — 2026-09-22 — complete and approved
+
+- Added submitted English Open-Meteo/GeoNames search, existing coordinate selection,
+  and up to 20 named local favorites with removal and serialized persistence.
+  Manual selection remains available without GPS permission and while offline.
+- Added a secondary light forecast sheet following the map-first design. Opening
+  either sheet pauses radar playback; the native map stays mounted. Forecast uses
+  the map center captured on opening and is explicitly labeled model forecast.
+- Displays the next 24 hourly endpoints: temperature, precipitation probability
+  and amount, and wind; units and the location timezone are explicit. Download
+  time is separate from forecast time. Parser preserves missing values and rejects
+  invalid units, dates, arrays, ranges and timezones. No inferred radar predictions.
+- Cache rounds coordinates to 0.01°, retains up to 12 locations, and refreshes
+  after 30 foreground minutes with the sheet open. Timeout, backoff, cancellation,
+  offline, missing-cache, expired-hours, partial and stale states are implemented.
+  Provider details and live evidence are documented in PROVIDERS.md.
+- Passed `npm.cmd run typecheck`, `npm.cmd run lint`, `npm.cmd test` (11 tests),
+  `npm.cmd run smoke:forecast`, and `npx.cmd expo run:android --no-bundler`.
+  Build succeeded in 16 seconds; development APK installed on Pixel_10 / API 36 /
+  x86_64. No dependencies added; existing package versions and lockfile unchanged.
+- Live provider smoke confirmed real English Gdynia search results and 72 hourly
+  forecast entries in Europe/Warsaw with validated units and future timestamps.
+- Emulator checks: submitted Gdynia search and selected real result; native camera
+  moved to the result; forecast rendered actual hourly values and attribution;
+  hardware Back closed sheets; favorite saved and survived force-stop/relaunch;
+  offline favorite selection worked; cached forecast retained its download time;
+  panning to an uncached location offline showed an explicit no-saved-data state.
+  Network restored and app returned with camera/radar intact.
+- Emulator testing caught a false transient stale badge when fetch completion was
+  newer than the freshness clock. Fetch success now updates that clock atomically.
+  Unit tests cover freshness boundaries, future cache times, DST repeated hours,
+  null-versus-zero, invalid provider data and geocoding errors/empty results.
+- Evidence in ignored `artifacts/`: `m3-build.log`, `m3-result.xml`,
+  `m3-forecast.png`, `m3-persist.xml`, `m3-offline.xml`, `m3-uncached.xml` and
+  `open-meteo-smoke.json`. Screenshots are development-client views, not release proof.
+- Still untested on device: physical phone, TalkBack/large fonts, full 30-minute
+  refresh wait, injected malformed/partial/429 responses and forced stale cache.
+  Boundary/schema cases have focused tests; no claim that those device checks passed.
+  M6 standalone APK remains pending. Pause here for M3 approval before committing.
+
+### M3 approval — 2026-09-22
+
+- User confirmed: "Looks good. MIlestone complete. Work on next milestone."
+  M3 is approved for commit; proceed with M4 and pause before its commit.
+- Outstanding device checks remain unverified.
