@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "Weather Radar",
+    "slug": "weather-radar",
+    "scheme": "weather-radar",
+    "version": "0.1.0",
+    "platforms": [
+      "android"
+    ],
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "android": {
+      "package": "pl.konta.weatherradar",
+      "blockedPermissions": [
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.SYSTEM_ALERT_WINDOW"
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundColor": "#F5F7FA"
+      }
+    },
+    "plugins": [
+      "@maplibre/maplibre-react-native",
+      "expo-dev-client",
+      [
+        "expo-location",
+        {
+          "isAndroidBackgroundLocationEnabled": false,
+          "isAndroidForegroundServiceEnabled": false
+        }
+      ]
+    ]
+  }
+}

@@ -1,11 +1,32 @@
 # Design — light radar first
 
+## User-provided visual reference
+Use [ui mockup.png](<ui mockup.png>) when designing and reviewing the app. The user
+added this reference on 2026-09-22. The leftmost **01 / LIGHT** concept is the
+primary reference for M1–M2: a dominant map, compact rounded location bar,
+pill-shaped layer controls, circular locate/zoom buttons along the right edge,
+and a white bottom panel with rounded top corners, a small grab handle, clear
+radar heading, intensity legend, blue play button and horizontal timeline.
+Follow its spacing, proportions and visual hierarchy, adapting to Android safe
+areas, larger fonts and accessible touch targets.
+
+Translate all reference UI copy into English, including Rain, Warnings, Rain
+radar and intensity labels. Keep observation time separate from fetch time.
+Use actual provider frames, available timestamps and a provider-correct legend;
+the mockup's weather, gradient and timestamps are illustrative. A location dot
+must represent an obtained location, not a decorative or fabricated GPS fix.
+Expose controls only when their features are implemented: warnings remain M4,
+the middle dark concept remains M5, and lightning stays deferred. The rightmost
+weather dashboard does not replace the selected map-first layout.
+
 ## Primary screen
 Portrait Android screen dominated by the map (roughly 70% of available height). Pale neutral land, pale blue water, understated roads, legible city labels. Render authentic provider weather imagery; the previous concept image was illustrative, not geographic or meteorological ground truth.
 
-At the top: rounded location/search control, then compact Opady and Ostrzeżenia controls. Only expose completed features. At the right: locate and zoom buttons. Keep map and weather credits visible above the bottom sheet.
+All app copy and accessibility labels are English, never Polish.
 
-At the bottom: a compact white sheet with Radar opadów, selected frame time, freshness indicator, provider-matched intensity legend, play/pause and a time scrubber. Show the actual available range rather than assuming every frame exists. A restrained expandable row holds opacity and layer settings. Forecast is secondary, not a large dashboard displacing the map.
+At the top: rounded location/search control, then compact Rain and Warnings controls. Only expose completed features. At the right: locate and zoom buttons. Keep map and weather credits visible above the bottom sheet.
+
+At the bottom: a compact white sheet with Rain radar, selected frame time, freshness indicator, provider-matched intensity legend, play/pause and a time scrubber. Show the actual available range rather than assuming every frame exists. A restrained expandable row holds opacity and layer settings. Forecast is secondary, not a large dashboard displacing the map.
 
 ## Visual system
 Suggested light tokens: background #F5F7FA, surface #FFFFFF, primary text #172438, secondary text #526175, accent #1677EE, border #DEE5ED. Use semantic names rather than hardcoded colors in components. Use platform sans-serif typography, 8 dp spacing increments, 16 dp panel padding, 16–24 dp corner radii and subtle elevation. Text must survive larger Android font settings.

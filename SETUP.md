@@ -15,7 +15,7 @@ On Windows, keeping Node, Java, the Android SDK and build tools in one environme
 ```text
 Read AGENTS.md, DESIGN.md, MILESTONES.md and SETUP.md. Build this new personal-use Android weather radar app using React Native, TypeScript, Expo development builds and MapLibre.
 
-Implement M1 and M2 end to end first: a real light-mode native map, live RainViewer radar, playback timeline, opacity, GPS on request, attribution and honest loading/stale/offline states. Choose a permitted base-map provider and document its requirements. Verify actual metadata and tiles. The UI language is Polish.
+Implement M1 and M2 end to end first: a real light-mode native map, live RainViewer radar, playback timeline, opacity, GPS on request, attribution and honest loading/stale/offline states. Choose a permitted base-map provider and document its requirements. Verify actual metadata and tiles. The UI language is English; never add Polish app copy.
 
 Preserve these instruction files when scaffolding. If the scaffold tool cannot initialize this nonempty directory, scaffold in a temporary sibling and copy the generated app files selectively, excluding its .git and preserving our documentation. Do not delete or replace existing instructions.
 

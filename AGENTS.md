@@ -1,13 +1,15 @@
 # Android Weather Radar — agent instructions
 
 ## Goal and agreed decisions
-Build a personal-use Android application in a new repository. Use React Native and TypeScript. The primary experience is design option 1: a light, map-first rain radar with a bottom playback panel. The app UI is Polish; code and development documentation are English.
+Build a personal-use Android application in a new repository. Use React Native and TypeScript. The primary experience is design option 1: a light, map-first rain radar with a bottom playback panel. The app UI, accessibility labels, messages, code and development documentation must be English. Never add Polish app copy (user decision, 2026-09-22; supersedes the original Polish UI requirement).
 
 Android only. No iOS, web app, accounts, ads, subscriptions, or backend in the MVP. Working title: Weather Radar; this is not a final branding decision.
 
 Dark mode is a later milestone. Its default will switch by device-local time, with manual overrides. Do not implement it in the first milestone, but use semantic theme tokens from the start.
 
 Read DESIGN.md, MILESTONES.md and SETUP.md before implementing. Work in milestone order. Preserve these files during scaffolding and record verified progress in MILESTONES.md. Resolve routine implementation decisions independently. Never mark device checks as passed unless actually performed.
+
+Use the user-provided `ui mockup.png` as the visual design reference, specifically its leftmost `01 / LIGHT` concept for M1–M2. DESIGN.md records how to apply it. All app copy remains English even where the reference uses Polish.
 
 ## Technical direction
 - Expo with a custom Android development build, React Native, strict TypeScript.

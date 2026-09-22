@@ -1,0 +1,16 @@
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/src/main/java/org/maplibre/reactnative/components/mapview/MLRNMapView.kt b/node_modules/@maplibre/maplibre-react-native/android/src/main/java/org/maplibre/reactnative/components/mapview/MLRNMapView.kt
+index b088909..9a09e9a 100644
+--- a/node_modules/@maplibre/maplibre-react-native/android/src/main/java/org/maplibre/reactnative/components/mapview/MLRNMapView.kt
++++ b/node_modules/@maplibre/maplibre-react-native/android/src/main/java/org/maplibre/reactnative/components/mapview/MLRNMapView.kt
+@@ -92,7 +92,10 @@ open class MLRNMapView(
+     options: MapLibreMapOptions?,
+ ) : MapView(
+         context,
+-        options,
++        (options ?: MapLibreMapOptions.createFromAttributes(context)).apply {
++            // OSM policy: request only visible tiles, without lower-zoom prefetch.
++            prefetchZoomDelta = 0
++        },
+     ),
+     OnMapReadyCallback,
+     MapLibreMap.OnMapClickListener,
