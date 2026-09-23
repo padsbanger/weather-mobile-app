@@ -7,8 +7,8 @@ import { type ThemeMode } from './schedule';
 
 const hours = Array.from({ length: 24 }, (_, hour) => hour);
 function hourLabel(hour: number) { return `${String(hour).padStart(2, '0')}:00`; }
-export function ThemeSheet({ currentLocation, onChooseLocation, onClose }: {
-  currentLocation: string; onChooseLocation: () => void; onClose: () => void;
+export function ThemeSheet({ currentLocation, onChooseLocation, onZoomIn, onZoomOut, onClose }: {
+  currentLocation: string; onChooseLocation: () => void; onZoomIn: () => void; onZoomOut: () => void; onClose: () => void;
 }) {
   const { colors, preference, resolved, setMode, setHours, reducedMotion } = useTheme();
   const s = useMemo(() => makeStyles(colors), [colors]);
@@ -30,6 +30,11 @@ export function ThemeSheet({ currentLocation, onChooseLocation, onClose }: {
           <Pressable accessibilityRole="button" accessibilityLabel="Choose map location" onPress={onChooseLocation} style={s.locationAction}>
             <Text style={s.link}>Search or choose a location</Text>
           </Pressable>
+          <Text style={s.title}>Map zoom</Text>
+          <View style={s.modeRow}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Zoom in" onPress={onZoomIn} style={s.locationAction}><Text style={s.link}>Zoom in +</Text></Pressable>
+            <Pressable accessibilityRole="button" accessibilityLabel="Zoom out" onPress={onZoomOut} style={s.locationAction}><Text style={s.link}>Zoom out −</Text></Pressable>
+          </View>
           <Text style={s.title}>Appearance</Text>
           <Text style={s.body}>Current appearance: {resolved}. Automatic mode follows the device local time.</Text>
           <View style={s.modeRow}>{modes.map(({ mode, label }) => <Pressable key={mode} accessibilityRole="radio"

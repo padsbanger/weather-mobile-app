@@ -1,5 +1,21 @@
 # Design — light radar first
 
+## Unified control bar (2026-09-23)
+
+The new user reference places playback and the five primary actions in one
+rounded bottom surface: Layers, Forecast, Warnings, Locate and Settings. The
+map fills the screen behind this surface, including its side margins and lower
+safe area, so the panel floats over geography without a solid backing strip.
+The bottom controls still sit inside the Android safe area. The map top shows
+the selected place and displayed radar time. Active warnings get
+a small indicator on the Warnings action; county selection and full details
+remain in its sheet. The radar timeline, Latest and expand control share the
+upper row of the surface. Expanded radar information retains opacity, the dBZ
+legend, frame/fetch times and coverage explanation. The collapsed surface keeps
+a short coverage caveat. Manual location selection and zoom actions are in
+Settings; map gestures remain available. No map credits are displayed, following
+the earlier user request and the distribution limitation in PROVIDERS.md.
+
 ## UI tuning first pass (2026-09-23)
 
 The light map uses OpenFreeMap Positron vector tiles. Radar is layered above

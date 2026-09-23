@@ -1,5 +1,27 @@
 # Milestones
 
+## Unified bottom control bar — 2026-09-23 — approved
+
+- Follow-up removed the solid screen-color backdrop around and below the bar.
+  The map now fills the screen beneath the floating surface and lower safe area.
+  A rebuilt signed release launched without Metro on Pixel_10 Android 16/API 36;
+  `artifacts/unified-bar-map-background.png` shows the 360×640 dp result.
+  Type checking and lint passed after this adjustment.
+- Applied the new user screenshot as the control layout reference. Playback,
+  Layers, Forecast, Warnings, Locate and Settings now share one rounded bottom
+  surface. Place and displayed radar time remain on the map. Map zoom and manual
+  place selection are available in Settings. Warning severity is indicated on
+  its action, and radar details expand from the playback row.
+- Type checking, lint and all 26 tests passed. A signed standalone release APK
+  built and launched without Metro on Pixel_10 Android 16/API 36. The bar fit
+  at the normal and 360×640 dp viewports. Settings opened with location and zoom
+  controls; Warnings opened from the bar, and Android Back returned to the map.
+  Screenshots: `artifacts/unified-bar.png`, `artifacts/unified-bar-small.png`,
+  `artifacts/unified-settings.png`, `artifacts/unified-warnings.png`.
+  Playback, every button's full flow, enlarged fonts and a physical device
+  have not been rechecked for this layout. The user approved the layout and
+  backdrop adjustment for commit on 2026-09-23.
+
 ## UI tuning first pass — 2026-09-23 — approved
 
 - User follow-up removed the coordinate/search bar from the map. Settings now

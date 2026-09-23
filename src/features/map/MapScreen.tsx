@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Animated, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNetInfo } from '@react-native-community/netinfo';
@@ -25,17 +25,7 @@ import { LightningLayer } from '../lightning/LightningLayer';
 import { LightningSheet } from '../lightning/LightningSheet';
 import { useLightning } from '../lightning/useLightning';
 import { type Bounds } from '../../providers/dmiLightning';
-
-function Button({ label, children, onPress, disabled = false }: {
-  label: string; children: React.ReactNode; onPress: () => void; disabled?: boolean;
-}) {
-  const { colors } = useTheme();
-  const styles = useMemo(() => makeStyles(colors), [colors]);
-  return <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled }} disabled={disabled}
-    onPress={onPress} style={({ pressed }) => [styles.button, (pressed || disabled) && styles.dim]}>
-    <Text style={styles.buttonText}>{children}</Text>
-  </Pressable>;
-}
+import { formatFrameTime, isStale } from '../../providers/rainviewer';
 
 export function MapScreen() {
   const { colors, resolved, reducedMotion, storageError: themeStorageError } = useTheme();
@@ -46,8 +36,6 @@ export function MapScreen() {
   const previousTheme = useRef(resolved);
   const transitioning = useRef(false);
   const insets = useSafeAreaInsets();
-  const { height: windowHeight, width: windowWidth } = useWindowDimensions();
-  const compactMapControls = windowHeight < 700;
   const network = useNetInfo();
   const offline = network.isConnected === false || network.isInternetReachable === false;
   const radar = useRadar(offline);
@@ -132,6 +120,9 @@ export function MapScreen() {
   }
   const activeWarnings = warningsForArea(warnings.data, warnings.area).filter(w => warningPhase(w, warnings.now) === 'active');
   const highestSeverity = activeWarnings.reduce<1 | 2 | 3>((level, w) => w.severity > level ? w.severity : level, 1);
+  const warningLabel = warnings.area ? `Selected county: ${areaLabel(warnings.area)}. ${warningSummary(warnings.data, warnings.area, warnings.now, warnings.fetchedAt, offline, warnings.error)}` : 'Choose a county to check warnings.';
+  const newestRadar = radar.data?.frames.at(-1);
+  const radarStatus = radar.offline ? 'Offline' : radar.metadataError ? 'Update failed' : newestRadar && isStale(newestRadar.time, radar.now) ? 'Outdated' : !radar.enabled ? 'Hidden' : null;
   return <View style={[styles.screen, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
     <View style={styles.mapArea}>
       {initial && <Animated.View style={[StyleSheet.absoluteFill, { opacity: mapOpacity }]}><Map ref={map} mapStyle={resolved === 'dark' ? darkBasemap.style : lightBasemap.style} style={StyleSheet.absoluteFill} attribution={false}
@@ -150,42 +141,35 @@ export function MapScreen() {
         <RadarLayers displayed={radar.displayed} staged={radar.staged} enabled={radar.enabled} opacity={radar.opacity} />
         <LightningLayer lightning={lightning} maxAge={lightningMaxAge} />
       </Map></Animated.View>}
-      <View style={styles.top}>
-        <View style={styles.layerRow}><Pressable accessibilityRole="button" accessibilityLabel="Open map layers" onPress={() => { openSheet(); setLayersOpen(true); }} style={styles.rainPill}>
-          <Text style={styles.rainText}>Layers{radar.enabled || lightning.enabled ? ' · ' : ''}{radar.enabled ? 'Rain' : ''}{radar.enabled && lightning.enabled ? ', ' : ''}{lightning.enabled ? 'Lightning' : ''}</Text>
-        </Pressable>
-        <Pressable accessibilityRole="button" accessibilityLabel="Forecast for map center" style={styles.rainPill}
-          onPress={() => { openSheet(); setForecastPlace({ name: placeName, center }); }}><Text style={styles.rainText}>Forecast</Text></Pressable>
-        <Pressable accessibilityRole="button" accessibilityLabel="Open settings" onPress={() => { openSheet(); setThemeOpen(true); }} style={styles.settingsButton}>
-          <Text style={styles.settingsIcon}>⚙</Text>
-        </Pressable></View>
-        <Pressable accessibilityRole="button" accessibilityLabel={`Weather warnings. ${warnings.area ? `Selected county: ${areaLabel(warnings.area)}. ${warningSummary(warnings.data, warnings.area, warnings.now, warnings.fetchedAt, offline, warnings.error)}` : 'Choose a county to check warnings.'}`}
-          onPress={() => { openSheet(); setWarningsOpen(true); }} style={[styles.warningBanner, activeWarnings.length > 0 && { backgroundColor: severityColors(highestSeverity, colors).backgroundColor }]}>
-          <Text numberOfLines={1} style={[styles.warningText, activeWarnings.length > 0 && { color: severityColors(highestSeverity, colors).color }]}>⚠  {warnings.area ? `${areaLabel(warnings.area)} · ${warningSummary(warnings.data, warnings.area, warnings.now, warnings.fetchedAt, offline, warnings.error)}` : 'Warnings · select county'}</Text>
-        </Pressable>
-        {(offline || mapError || !loaded) && <View accessibilityLiveRegion="polite" style={[styles.notice, compactMapControls && { maxWidth: windowWidth - 176 }]}>
+      <View style={[styles.top, { top: insets.top + 16 }]} pointerEvents="none">
+        <Text style={styles.place} numberOfLines={1}>{placeName}</Text>
+        <Text style={styles.radarTime} accessibilityLiveRegion="polite">Radar · {radar.displayed ? formatFrameTime(radar.displayed.frame.time) : 'Loading'}{radarStatus ? ` · ${radarStatus}` : ''}</Text>
+        {(offline || mapError || !loaded) && <View accessibilityLiveRegion="polite" style={styles.notice}>
           {!loaded && !offline && !mapError && <ActivityIndicator color={colors.accent} />}
           <Text style={styles.noticeText}>{offline ? 'Offline · only previously loaded map areas are available.' : mapError ? 'The map could not load completely. Some areas may be missing.' : 'Loading map…'}</Text>
         </View>}
       </View>
-      <View style={[styles.controls, compactMapControls && styles.controlsCompact]}>
-        <Button label="Show my location" onPress={() => { void location.locate(); }} disabled={location.busy}>{location.busy ? '…' : '◎'}</Button>
-        <View style={[styles.zoomGroup, compactMapControls && styles.zoomGroupCompact]}>
-        <Button label="Zoom in" onPress={() => camera.current?.zoomTo(Math.min(18, current.current.zoom + 1), { duration: 250 })}>+</Button>
-        <Button label="Zoom out" onPress={() => camera.current?.zoomTo(Math.max(2, current.current.zoom - 1), { duration: 250 })}>−</Button></View>
-      </View>
     </View>
+    <View style={styles.spacer} pointerEvents="none" />
     <View>
       {location.message && <Text accessibilityLiveRegion="polite" style={styles.feedback}>{location.message}</Text>}
       {themeStorageError && <Text style={styles.feedback}>Theme settings could not be saved.</Text>}
       {storageError && <Text style={styles.feedback}>Settings could not be saved. The map may return to Gdynia when you restart the app.</Text>}
     </View>
-    <RadarPanel radar={radar} />
+    <RadarPanel radar={radar} layersActive={radar.enabled || lightning.enabled}
+      warningActive={activeWarnings.length > 0} warningColor={severityColors(highestSeverity, colors).color} warningLabel={warningLabel}
+      locating={location.busy} onLayers={() => { openSheet(); setLayersOpen(true); }}
+      onForecast={() => { openSheet(); setForecastPlace({ name: placeName, center }); }}
+      onWarnings={() => { openSheet(); setWarningsOpen(true); }}
+      onLocate={() => { void location.locate(); }} onSettings={() => { openSheet(); setThemeOpen(true); }} />
     {layersOpen && <LayersSheet rainEnabled={radar.enabled} onRainChange={() => radar.setEnabled(!radar.enabled)} lightningEnabled={lightning.enabled}
       onLightningChange={() => lightning.setVisible(!lightning.enabled)} onLightningDetails={() => { setLayersOpen(false); setLightningOpen(true); }} onClose={() => setLayersOpen(false)} />}
     {modal && <LocationPicker current={{ name: placeName, center }} offline={offline} onSelect={selectPlace} onClose={() => setModal(false)} />}
     {forecastPlace && <ForecastSheet place={forecastPlace} offline={offline} onClose={() => setForecastPlace(null)} />}
-    {themeOpen && <ThemeSheet currentLocation={placeName} onChooseLocation={() => { setThemeOpen(false); setModal(true); }} onClose={() => setThemeOpen(false)} />}
+    {themeOpen && <ThemeSheet currentLocation={placeName} onChooseLocation={() => { setThemeOpen(false); setModal(true); }}
+      onZoomIn={() => camera.current?.zoomTo(Math.min(18, current.current.zoom + 1), { duration: 250 })}
+      onZoomOut={() => camera.current?.zoomTo(Math.max(2, current.current.zoom - 1), { duration: 250 })}
+      onClose={() => setThemeOpen(false)} />}
     {warningsOpen && <WarningsSheet state={warnings} onClose={() => setWarningsOpen(false)} />}
     {lightningOpen && <LightningSheet lightning={lightning} maxAge={lightningMaxAge} setMaxAge={setLightningMaxAge} currentBounds={currentBounds} onClose={() => setLightningOpen(false)} />}
   </View>;
@@ -193,32 +177,12 @@ export function MapScreen() {
 
 function makeStyles(c: ThemeColors) { return StyleSheet.create({
   screen: { flex: 1, backgroundColor: c.background },
-  mapArea: { flex: 1, minHeight: 240 },
-  top: { position: 'absolute', top: 12, left: 12, right: 12, gap: 6 },
-  layerRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  warningBanner: { alignSelf: 'flex-start', maxWidth: '100%', backgroundColor: c.surface, borderRadius: 14, paddingHorizontal: 12, minHeight: 48, justifyContent: 'center', elevation: 2 },
-  warningText: { color: c.text, fontSize: 14, fontWeight: '600' },
-  settingsButton: { marginLeft: 'auto', backgroundColor: c.surface, borderRadius: 16, width: 48, height: 48, justifyContent: 'center', alignItems: 'center', elevation: 3 },
-  settingsIcon: { color: c.text, fontSize: 22 },
-  eyebrow: { color: c.muted, fontSize: 11, letterSpacing: 1.4, fontWeight: '600' },
-  rainPill: { alignSelf: 'flex-start', backgroundColor: c.surface, borderRadius: 24, minHeight: 48, paddingHorizontal: 14, justifyContent: 'center', elevation: 2 },
-  rainPillActive: { backgroundColor: c.accent }, rainText: { color: c.text, fontSize: 16, fontWeight: '600' }, rainTextActive: { color: c.onAccent },
+  mapArea: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 },
+  spacer: { flex: 1 },
+  top: { position: 'absolute', left: 20, right: 20, gap: 3 },
+  place: { color: c.text, fontSize: 25, fontWeight: '700', textShadowColor: c.surface, textShadowRadius: 5 },
+  radarTime: { color: c.text, fontSize: 16, textShadowColor: c.surface, textShadowRadius: 5 },
   notice: { backgroundColor: c.surface, borderRadius: 12, padding: 12, flexDirection: 'row', gap: 8 },
   noticeText: { color: c.text, flex: 1, fontSize: 14 },
-  controls: { position: 'absolute', right: 12, bottom: 12, gap: 8 },
-  controlsCompact: { flexDirection: 'row', alignItems: 'center' },
-  zoomGroup: { borderRadius: 24, overflow: 'hidden', gap: 1, backgroundColor: c.border },
-  zoomGroupCompact: { flexDirection: 'row' },
-  button: { minWidth: 48, minHeight: 48, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: c.surface, borderRadius: 24, justifyContent: 'center', alignItems: 'center' },
-  buttonText: { color: c.accent, fontSize: 22, fontWeight: '600' },
-  dim: { opacity: 0.55 },
-  panel: { backgroundColor: c.surface, padding: 20, borderTopLeftRadius: 24, borderTopRightRadius: 24, borderTopWidth: 1, borderColor: c.border },
-  handle: { width: 36, height: 4, borderRadius: 2, backgroundColor: c.border, alignSelf: 'center', marginBottom: 16 },
-  heading: { fontSize: 23, fontWeight: '700', color: c.text },
-  body: { fontSize: 15, lineHeight: 23, color: c.muted, marginTop: 8 },
   feedback: { fontSize: 14, lineHeight: 21, color: c.warning, backgroundColor: c.warningSurface, borderRadius: 8, padding: 10, marginTop: 8 },
-  modalBackdrop: { flex: 1, backgroundColor: c.background, justifyContent: 'flex-end' },
-  modalPanel: { padding: 24, gap: 12 },
-  label: { color: c.text, fontSize: 15 },
-  input: { minHeight: 48, borderWidth: 1, borderColor: c.border, borderRadius: 12, padding: 12, color: c.text, backgroundColor: c.surface, fontSize: 18 },
 }); }

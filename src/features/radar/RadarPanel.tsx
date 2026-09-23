@@ -6,7 +6,14 @@ import { type ThemeColors } from '../../theme/tokens';
 import { useTheme } from '../../theme/ThemeProvider';
 import { type useRadar } from './useRadar';
 
-export function RadarPanel({ radar }: { radar: ReturnType<typeof useRadar> }) {
+type RadarPanelProps = {
+  radar: ReturnType<typeof useRadar>;
+  layersActive: boolean; warningActive: boolean; warningColor: string; warningLabel: string; locating: boolean;
+  onLayers: () => void; onForecast: () => void; onWarnings: () => void; onLocate: () => void; onSettings: () => void;
+};
+
+export function RadarPanel({ radar, layersActive, warningActive, warningColor, warningLabel, locating,
+  onLayers, onForecast, onWarnings, onLocate, onSettings }: RadarPanelProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [expanded, setExpanded] = useState(false);
@@ -23,15 +30,6 @@ export function RadarPanel({ radar }: { radar: ReturnType<typeof useRadar> }) {
   const coolingDown = radar.retryAt > radar.now;
   const playbackDisabled = !radar.enabled || radar.offline || coolingDown || frames.length < 2;
   return <View style={styles.panel}>
-    <View style={styles.row}>
-      <View style={styles.grow}>
-        <Text style={styles.heading}>Rain radar <Text accessibilityLiveRegion="polite" style={[styles.status, (stale || radar.offline) && styles.warning]}>· {status}</Text></Text>
-      </View>
-      <Pressable accessibilityRole="button" accessibilityLabel={expanded ? 'Hide radar settings and information' : 'Show radar settings and information'} accessibilityState={{ expanded }}
-        onPress={() => setExpanded(!expanded)} style={styles.info}><Text style={styles.infoText}>{expanded ? '⌃' : '⌄'}</Text></Pressable>
-    </View>
-    <View style={styles.frameRow}><Text style={styles.time}>{displayed ? `Displayed ${formatFrameTime(displayed.time)} · ${Math.max(0, Math.floor((radar.now - displayed.time) / 60000))} min ago` : radar.loading ? 'Loading radar history…' : 'No radar frame loaded'}</Text>
-      {radar.staged && !radar.staged.ready && <ActivityIndicator accessibilityLabel={`Loading ${formatFrameTime(radar.staged.frame.time)}`} size="small" color={colors.accent} />}</View>
     {issue && <Text accessibilityLiveRegion="polite" style={styles.warning}>{issue}</Text>}
     {radar.playbackError && <Text style={styles.warning}>Frame unavailable. Keeping the last loaded frame. Select a frame to retry.</Text>}
     {coolingDown && <Text style={styles.warning}>Tile request limit reached. Retry in {Math.ceil((radar.retryAt - radar.now) / 1000)} seconds.</Text>}
@@ -55,14 +53,20 @@ export function RadarPanel({ radar }: { radar: ReturnType<typeof useRadar> }) {
       </View>
       <Pressable accessibilityRole="button" accessibilityLabel="Show latest radar frame" accessibilityState={{ disabled: !newest || coolingDown || !radar.enabled }} disabled={!newest || coolingDown || !radar.enabled}
         onPress={() => { if (newest) radar.select(newest); }} style={styles.latest}><Text style={styles.link}>Latest</Text></Pressable>
+      <Pressable accessibilityRole="button" accessibilityLabel={expanded ? 'Hide radar settings and information' : 'Show radar settings and information'} accessibilityState={{ expanded }}
+        onPress={() => setExpanded(!expanded)} style={styles.info}><Text style={styles.infoText}>{expanded ? '⌄' : '⌃'}</Text></Pressable>
     </View>
-    <View accessible accessibilityLabel="Radar reflectivity legend, Universal Blue, 15 to 50 dBZ" style={styles.legend}>
-      <View style={styles.colors}>{RADAR_LEGEND.map((stop) => <View key={stop.dbz} style={[styles.swatch, { backgroundColor: stop.color }]} />)}</View>
-      <View style={styles.row}>{RADAR_LEGEND.map((stop) => <Text key={stop.dbz} style={styles.legendLabel}>{stop.dbz}</Text>)}</View>
-      <Text style={styles.note}>Reflectivity · dBZ</Text>
-    </View>
-    <Text style={styles.note}>Blank areas may mean missing coverage.</Text>
+    <Text style={styles.coverage}>Blank areas may mean missing coverage.</Text>
     {expanded && <ScrollView style={styles.details} contentContainerStyle={styles.detailsContent}>
+      <Text style={styles.time}>Rain radar · <Text style={(stale || radar.offline) && styles.warning}>{status}</Text></Text>
+      <Text style={styles.time}>{displayed ? `Displayed ${formatFrameTime(displayed.time)} · ${Math.max(0, Math.floor((radar.now - displayed.time) / 60000))} min ago` : radar.loading ? 'Loading radar history…' : 'No radar frame loaded'}</Text>
+      {radar.staged && !radar.staged.ready && <ActivityIndicator accessibilityLabel={`Loading ${formatFrameTime(radar.staged.frame.time)}`} size="small" color={colors.accent} />}
+      <View accessible accessibilityLabel="Radar reflectivity legend, Universal Blue, 15 to 50 dBZ" style={styles.legend}>
+        <View style={styles.colors}>{RADAR_LEGEND.map((stop) => <View key={stop.dbz} style={[styles.swatch, { backgroundColor: stop.color }]} />)}</View>
+        <View style={styles.row}>{RADAR_LEGEND.map((stop) => <Text key={stop.dbz} style={styles.legendLabel}>{stop.dbz}</Text>)}</View>
+        <Text style={styles.note}>Reflectivity · dBZ</Text>
+      </View>
+      <Text style={styles.note}>Blank areas may mean missing coverage.</Text>
       <Text style={styles.time}>Radar opacity · {Math.round(radar.opacity * 100)}%</Text>
       <Slider accessibilityLabel="Radar opacity" minimumValue={0.1} maximumValue={1} step={0.05} value={radar.opacity}
         onSlidingComplete={radar.setOpacity} style={styles.slider} minimumTrackTintColor={colors.accent} thumbTintColor={colors.accent} />
@@ -73,23 +77,42 @@ export function RadarPanel({ radar }: { radar: ReturnType<typeof useRadar> }) {
       <Text style={styles.note}>Blank areas may also be dry; radar coverage is not guaranteed.</Text>
       {(radar.cacheError || radar.preferenceError) && <Text style={styles.warning}>Some radar data or settings could not be saved on this device.</Text>}
     </ScrollView>}
+    <View style={styles.navigation}>
+      {([
+        { label: 'Layers', icon: '▱', action: onLayers, active: layersActive, hint: 'Open map layers' },
+        { label: 'Forecast', icon: '☁', action: onForecast, hint: 'Forecast for map center' },
+        { label: 'Warnings', icon: '⚠', action: onWarnings, hint: `Weather warnings. ${warningLabel}` },
+        { label: 'Locate', icon: locating ? '…' : '◎', action: onLocate, hint: 'Show my location', disabled: locating },
+        { label: 'Settings', icon: '⚙', action: onSettings, hint: 'Open settings' },
+      ] as const).map((item) => <Pressable key={item.label} accessibilityRole="button" accessibilityLabel={item.hint}
+        accessibilityState={{ disabled: 'disabled' in item && item.disabled, selected: 'active' in item && item.active }}
+        disabled={'disabled' in item && item.disabled} onPress={item.action} style={styles.navAction}>
+        <View style={styles.navIconWrap}><Text style={[styles.navIcon, 'active' in item && item.active && styles.navActive]}>{item.icon}</Text>
+          {item.label === 'Warnings' && warningActive && <View style={[styles.warningDot, { backgroundColor: warningColor }]} />}</View>
+        <Text style={[styles.navLabel, 'active' in item && item.active && styles.navActive]} numberOfLines={1}>{item.label}</Text>
+      </Pressable>)}
+    </View>
   </View>;
 }
 
 function makeStyles(c: ThemeColors) { return StyleSheet.create({
-  panel: { backgroundColor: c.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 16, paddingTop: 6, paddingBottom: 8, borderTopWidth: 1, borderColor: c.border },
+  panel: { backgroundColor: c.surface, borderRadius: 28, marginHorizontal: 10, marginBottom: 8, paddingHorizontal: 12, paddingTop: 10, paddingBottom: 8, borderWidth: 1, borderColor: c.border, elevation: 6 },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  grow: { flex: 1 }, heading: { fontSize: 18, fontWeight: '700', color: c.text },
-  status: { fontSize: 12, color: c.muted, fontWeight: '500' },
-  frameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  grow: { flex: 1 },
   time: { fontSize: 14, color: c.text, marginTop: 4 }, note: { fontSize: 11, color: c.muted, lineHeight: 16 },
   warning: { fontSize: 12, color: c.warning, marginTop: 3 },
   info: { width: 48, height: 48, justifyContent: 'center', alignItems: 'center' }, infoText: { fontSize: 24, color: c.muted },
   legend: { marginTop: 2, gap: 1 }, colors: { flexDirection: 'row', height: 8, borderRadius: 4, overflow: 'hidden' },
   swatch: { flex: 1 }, legendLabel: { flex: 1, textAlign: 'center', fontSize: 10, color: c.muted },
-  playback: { flexDirection: 'row', alignItems: 'center', gap: 8, marginVertical: 2 },
+  playback: { flexDirection: 'row', alignItems: 'center', gap: 6, marginVertical: 2 },
   play: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', backgroundColor: c.accent },
   playText: { fontSize: 24, color: c.onAccent }, dim: { opacity: 0.45 },
   slider: { height: 48, width: '100%' }, details: { maxHeight: 190, marginTop: 8 }, detailsContent: { gap: 8 },
-  latest: { minHeight: 48, justifyContent: 'center', paddingHorizontal: 2 }, link: { color: c.accent, fontSize: 14, fontWeight: '600' },
+  latest: { minHeight: 48, justifyContent: 'center', paddingHorizontal: 2 }, link: { color: c.accent, fontSize: 12, fontWeight: '600' },
+  navigation: { flexDirection: 'row', borderTopWidth: 1, borderColor: c.border, marginTop: 10, paddingTop: 8 },
+  navAction: { flex: 1, minWidth: 0, minHeight: 72, alignItems: 'center', justifyContent: 'center', gap: 2 },
+  navIconWrap: { minHeight: 34, justifyContent: 'center' }, navIcon: { fontSize: 27, color: c.muted, textAlign: 'center' },
+  navLabel: { fontSize: 11, color: c.muted, textAlign: 'center' }, navActive: { color: c.accent, fontWeight: '700' },
+  warningDot: { position: 'absolute', width: 8, height: 8, right: -7, top: 2, borderRadius: 4 },
+  coverage: { color: c.muted, fontSize: 10, textAlign: 'center' },
 }); }
