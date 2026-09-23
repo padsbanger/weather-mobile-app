@@ -1,6 +1,6 @@
 # Milestones
 
-M1 is complete, approved and committed as `b25a8ff`. M2 is complete, approved and committed as `b9d9dc1`. M3 is complete and approved; verified checks and remaining device coverage are recorded below. M4–M6 remain pending. Pause after each milestone and commit only after user approval.
+M1 is complete, approved and committed as `b25a8ff`. M2 is committed as `b9d9dc1`; M3 as `281b553`, both approved. M4 is complete and approved, with verified checks and remaining device coverage below. M5–M6 remain pending. Pause after each milestone and commit only after user approval.
 
 ## M1 — Android foundation and base map
 - [x] Scaffold compatible Expo/React Native/TypeScript and MapLibre development build.
@@ -26,10 +26,10 @@ Exit: live rain history is usable during pan/zoom; errors never appear as dry we
 Exit: observed radar and model forecast are clearly distinguished.
 
 ## M4 — IMGW warnings
-- [ ] Inspect actual response schema and normalize active warnings.
-- [ ] Select administrative area manually unless a reliable mapping is available.
-- [ ] Show severity, area, valid times and full source text.
-- [ ] Handle expired warnings, no active warnings and provider failures distinctly.
+- [x] Inspect actual response schema and normalize active warnings.
+- [x] Select administrative area manually unless a reliable mapping is available.
+- [x] Show severity, area, valid times and full source text.
+- [x] Handle expired warnings, no active warnings and provider failures distinctly.
 Exit: useful in-app warnings without background-location or push infrastructure.
 
 ## M5 — Dark mode by local time
@@ -236,3 +236,70 @@ For each completed milestone record: changes, commands/checks actually run, devi
 - User confirmed: "Looks good. MIlestone complete. Work on next milestone."
   M3 is approved for commit; proceed with M4 and pause before its commit.
 - Outstanding device checks remain unverified.
+
+### M4 — 2026-09-22 — complete and approved
+
+- M3 approved and committed as `281b553`. User authorized proceeding with M4.
+  User also explicitly approved English UI with clearly labeled original Polish
+  IMGW warning text and required source credits. AGENTS.md/DESIGN.md record this.
+- Inspected actual IMGW JSON: string severity/probability, offset-less validity and
+  publication dates, original event/text/comment/office, and county TERYT codes.
+  Verified the live warning's times, wording and county against the matching
+  official PDF bulletin in IMGW's public September archive. Adapter interprets
+  dates in Europe/Warsaw; API timezone is not explicitly declared in its docs.
+- Added real warning adapter, five-minute foreground refresh, timeout/backoff and
+  cancellation, one-feed cache, 15-minute stale status and original fetch time.
+  Empty success, malformed/partial feed, offline, failed refresh and expired
+  validity are distinct. Failure never implies no active warnings.
+- Bundled the official GUS 2026 catalogue of 380 counties using actual TERYT codes.
+  Offline search and persisted manual county/All Poland selection are independent
+  of the map camera and GPS. No guessed boundaries, polygons or reverse geocoding.
+  Provider terms, attribution, source evidence and catalogue regeneration documented.
+- Added light Warnings pill, area-labeled map banner, list and full-detail sheet.
+  Severity 1–3 uses semantic amber/orange/red tokens plus text. Full original
+  source text remains selectable; controls and statuses remain English. Hardware
+  Back closes details before the list. Map remains mounted; opening pauses radar.
+- Passed: `npm.cmd run typecheck`, `npm.cmd run lint`, `npm.cmd test` (18 tests),
+  `npm.cmd run smoke:warnings`, `npx.cmd expo-doctor` (21/21),
+  `npx.cmd expo run:android --no-bundler` (6-second
+  incremental build/install). No new app packages/native configuration; lockfile
+  unchanged. Development APK still requires Metro; M6 standalone release is pending.
+- Tests cover validity boundaries, Warsaw DST summer/winter, nonexistent/repeated
+  local times, deduplication/revisions, contradictory source records, invalid and
+  partial data, null probability, matching county codes, stale/failed/offline
+  no-warning prevention and official catalogue integrity. No markup-only tests.
+- Pixel_10 / Android 16 API 36 / x86_64: selected tatrzański county from the actual
+  live warning; verified level 1, 80%, full Polish text, validity and publication
+  times. Area and feed survived force-stop/relaunch with Wi-Fi/data disabled.
+  Offline banner said Saved warnings, not a current all-clear. Network recovery
+  refreshed the successful-check time. Search for `2262` selected Gdynia and
+  showed no active warnings in the latest valid feed. Panning left that area fixed.
+- Expiry verified on the emulator without fabricated weather: disabled network,
+  advanced emulator clock to 20 seconds before the real warning's 22:00 UTC end,
+  and observed Saved warnings: 1 before expiry, then Current warning status
+  unavailable afterward (offline). Clock, automatic-time setting and network were
+  restored in a finally block. Radar camera remained intact. Source data was not
+  changed; injected time was test-only and no test override ships in the app.
+- Local evidence: `artifacts/imgw-smoke.json`, `imgw-warning-reference.pdf`,
+  `m4-build.log`, `m4-active.xml`, `m4-details.png`, `m4-persist.xml`,
+  `m4-before-expiry.xml`, `m4-expired.xml`, `m4-empty.xml` and `m4-pan.xml`.
+- Remaining device checks: physical phone, TalkBack/large fonts, injected HTTP
+  429/500/malformed/partial responses, an actual provider withdrawal/revision,
+  prolonged polling/memory behavior, and an autumn DST transition on device.
+  Corresponding pure parser/status boundaries are tested where applicable.
+  Pause for M4 user review before committing; M5 has not started.
+
+### Release command requested — 2026-09-22
+
+- Added `npm.cmd run release` using pinned EAS CLI 24.7.0 and an Android-only
+  `release` profile producing an internally distributed, signed APK without a
+  development client. Documented Expo login, project linking and signing setup.
+- This prepares the requested cloud build command; no EAS build was submitted,
+  no release APK was verified, and M6 remains pending. M4 still awaits approval.
+
+### M4 approval — 2026-09-23
+
+- User approved M4 and requested a commit and M5 implementation. The Expo release
+  script is included in the approved commit. An Expo project ID and explicit
+  foreground location permissions had also been added to app.json locally; these
+  are preserved in the commit. No release build or credentials are claimed.

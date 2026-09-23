@@ -147,3 +147,79 @@ proper place names can fall back to native names where translations are absent.
   with all four requested fields and no null values in that particular response.
   Evidence: `artifacts/open-meteo-search.json`, `open-meteo-forecast.json` and
   `open-meteo-smoke.json`. No weather values are hardcoded into the app.
+
+## IMGW meteorological warnings (M4)
+
+Verified 2026-09-22: documented public endpoint
+[`/api/data/warningsmeteo`](https://danepubliczne.imgw.pl/api/data/warningsmeteo)
+and [API information/terms](https://danepubliczne.imgw.pl/apiinfo). No API key.
+The terms permit private use and require source attribution, plus notice when
+data is processed. Both prescribed Polish statements are displayed in the sheet;
+the user explicitly approved original Polish warnings and credits within the
+otherwise English UI. Warning wording is preserved verbatim, not translated or
+summarized into safety advice. The official IMGW warnings page is linked.
+
+The actual response is an array with `id`, `nazwa_zdarzenia`, `stopien` (string
+1–3), `prawdopodobienstwo` (percentage string), `obowiazuje_od`, `obowiazuje_do`,
+`opublikowano`, `tresc`, `komentarz`, `biuro`, and `teryt` (four-digit county codes).
+Do not treat `teryt` as coordinates or generate polygons from the county names.
+Missing probability stays unknown. Invalid records create a partial-feed warning;
+an entirely invalid response preserves the previous cache and reports failure.
+Duplicate IDs retain the newest publication; conflicting equal-time records fail
+validation. A successful empty response replaces the previous warnings, allowing
+removed/withdrawn bulletins to disappear. Absence is not labeled cancellation.
+
+**Time convention:** API strings contain no offset. Treat them as Polish civil
+time in `Europe/Warsaw`, independently of the device timezone. This is an adapter
+interpretation corroborated against the matching official bulletin, not an explicit
+timezone declaration in the API documentation. On 2026-09-22, warning
+`Sk20260921094811163` (county `1217`, level 1, 80%) matched
+`MAW_STAN_20260921094942162.pdf` from the
+[official September archive](https://danepubliczne.imgw.pl/data/arch/ost_meteo/2026/09.zip):
+published 21 September 11:48, valid from 21 September 18:00 until 22 September
+24:00 (23 September 00:00). API wording and county matched. Local evidence:
+`artifacts/imgw-warning-reference.pdf`. The archive was inspected during development;
+the app fetches only the small JSON endpoint, never archive ZIPs.
+
+Nonexistent spring DST times are rejected. For ambiguous autumn times the app
+uses earliest start/latest end and visibly flags the ambiguity. Exact end time is
+exclusive: a warning stops being active at its end, not at the next network poll.
+Current/upcoming/expired are separate; old records can be inspected as expired.
+Validity state updates at the next boundary, every 15 foreground seconds for clock
+changes, and on resume. No push notifications or background service.
+
+Fetch at launch and every five foreground minutes; 15-second request timeout,
+retry backoff from 15 seconds to five minutes, cancellation on background/offline.
+Persist one feed with its original successful fetch time. At 15 minutes it is
+stale. Offline, failure, partial or stale data cannot yield a current no-warning
+status. Previously known warnings remain available with clear qualification.
+Polling interval is an app choice, not an IMGW latency/SLA promise.
+
+`npm.cmd run smoke:warnings` at 17:14:14 UTC on 2026-09-22 validated one real
+warning, no rejected records or unknown county codes, and nonempty original text.
+Normalized validity: 2026-09-21 16:00 UTC to 2026-09-22 22:00 UTC.
+Evidence: `artifacts/imgw-live.json`, `imgw-smoke.json`. An empty future response
+can pass the smoke check; malformed or partially invalid responses cannot.
+
+### Administrative-area catalogue
+
+The 380 counties are bundled from Statistics Poland's
+[2026 KTS/TERYT correspondence table](https://stat.gov.pl/download/gfx/portalinformacyjny/pl/defaultstronaopisowa/5875/1/1/tablica_kts-teryt_2026.xls),
+downloaded 2026-09-22. Source sheets: `Powiaty` and `Województwa`; the TERYT column
+is used directly, not inferred from BDL statistical identifiers. `2262` is Gdynia
+city; `1217` is tatrzański county. Official geographic names are preserved, while
+county/city labels and casing are reformatted. The UI credits the source, edition,
+acquisition date and processing per [GUS reuse conditions](https://bip.stat.gov.pl/en/contact-with-the-office/reuse-of-public-sector-information/).
+
+Select a county manually, or explicitly choose All Poland. Search matches names,
+regions or exact code, including input without diacritics. Selection persists and
+never follows map/GPS. No location-to-county lookup or boundary dataset is claimed.
+The catalogue is a versioned snapshot; refresh it when administrative units change.
+
+To reproduce the catalogue (development only; no app/runtime dependencies):
+
+```powershell
+Invoke-WebRequest -UseBasicParsing 'https://stat.gov.pl/download/gfx/portalinformacyjny/pl/defaultstronaopisowa/5875/1/1/tablica_kts-teryt_2026.xls' -OutFile artifacts/gus-kts-teryt-2026.xls
+python -m pip install --target artifacts/python-tools xlrd==2.0.2
+python scripts/import-counties.py artifacts/gus-kts-teryt-2026.xls
+```

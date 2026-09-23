@@ -1,0 +1,1902 @@
+[
+  {
+    "code": "0201",
+    "name": "bolesławiecki county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0202",
+    "name": "dzierżoniowski county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0203",
+    "name": "głogowski county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0204",
+    "name": "górowski county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0205",
+    "name": "jaworski county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0206",
+    "name": "karkonoski county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0207",
+    "name": "kamiennogórski county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0208",
+    "name": "kłodzki county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0209",
+    "name": "legnicki county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0210",
+    "name": "lubański county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0211",
+    "name": "lubiński county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0212",
+    "name": "lwówecki county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0213",
+    "name": "milicki county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0214",
+    "name": "oleśnicki county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0215",
+    "name": "oławski county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0216",
+    "name": "polkowicki county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0217",
+    "name": "strzeliński county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0218",
+    "name": "średzki county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0219",
+    "name": "świdnicki county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0220",
+    "name": "trzebnicki county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0221",
+    "name": "wałbrzyski county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0222",
+    "name": "wołowski county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0223",
+    "name": "wrocławski county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0224",
+    "name": "ząbkowicki county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0225",
+    "name": "zgorzelecki county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0226",
+    "name": "złotoryjski county",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0261",
+    "name": "Jelenia Góra (city)",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0262",
+    "name": "Legnica (city)",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0264",
+    "name": "Wrocław (city)",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0265",
+    "name": "Wałbrzych (city)",
+    "region": "Dolnośląskie"
+  },
+  {
+    "code": "0401",
+    "name": "aleksandrowski county",
+    "region": "Kujawsko-Pomorskie"
+  },
+  {
+    "code": "0402",
+    "name": "brodnicki county",
+    "region": "Kujawsko-Pomorskie"
+  },
+  {
+    "code": "0403",
+    "name": "bydgoski county",
+    "region": "Kujawsko-Pomorskie"
+  },
+  {
+    "code": "0404",
+    "name": "chełmiński county",
+    "region": "Kujawsko-Pomorskie"
+  },
+  {
+    "code": "0405",
+    "name": "golubsko-dobrzyński county",
+    "region": "Kujawsko-Pomorskie"
+  },
+  {
+    "code": "0406",
+    "name": "grudziądzki county",
+    "region": "Kujawsko-Pomorskie"
+  },
+  {
+    "code": "0407",
+    "name": "inowrocławski county",
+    "region": "Kujawsko-Pomorskie"
+  },
+  {
+    "code": "0408",
+    "name": "lipnowski county",
+    "region": "Kujawsko-Pomorskie"
+  },
+  {
+    "code": "0409",
+    "name": "mogileński county",
+    "region": "Kujawsko-Pomorskie"
+  },
+  {
+    "code": "0410",
+    "name": "nakielski county",
+    "region": "Kujawsko-Pomorskie"
+  },
+  {
+    "code": "0411",
+    "name": "radziejowski county",
+    "region": "Kujawsko-Pomorskie"
+  },
+  {
+    "code": "0412",
+    "name": "rypiński county",
+    "region": "Kujawsko-Pomorskie"
+  },
+  {
+    "code": "0413",
+    "name": "sępoleński county",
+    "region": "Kujawsko-Pomorskie"
+  },
+  {
+    "code": "0414",
+    "name": "świecki county",
+    "region": "Kujawsko-Pomorskie"
+  },
+  {
+    "code": "0415",
+    "name": "toruński county",
+    "region": "Kujawsko-Pomorskie"
+  },
+  {
+    "code": "0416",
+    "name": "tucholski county",
+    "region": "Kujawsko-Pomorskie"
+  },
+  {
+    "code": "0417",
+    "name": "wąbrzeski county",
+    "region": "Kujawsko-Pomorskie"
+  },
+  {
+    "code": "0418",
+    "name": "włocławski county",
+    "region": "Kujawsko-Pomorskie"
+  },
+  {
+    "code": "0419",
+    "name": "żniński county",
+    "region": "Kujawsko-Pomorskie"
+  },
+  {
+    "code": "0461",
+    "name": "Bydgoszcz (city)",
+    "region": "Kujawsko-Pomorskie"
+  },
+  {
+    "code": "0462",
+    "name": "Grudziądz (city)",
+    "region": "Kujawsko-Pomorskie"
+  },
+  {
+    "code": "0463",
+    "name": "Toruń (city)",
+    "region": "Kujawsko-Pomorskie"
+  },
+  {
+    "code": "0464",
+    "name": "Włocławek (city)",
+    "region": "Kujawsko-Pomorskie"
+  },
+  {
+    "code": "0601",
+    "name": "bialski county",
+    "region": "Lubelskie"
+  },
+  {
+    "code": "0602",
+    "name": "biłgorajski county",
+    "region": "Lubelskie"
+  },
+  {
+    "code": "0603",
+    "name": "chełmski county",
+    "region": "Lubelskie"
+  },
+  {
+    "code": "0604",
+    "name": "hrubieszowski county",
+    "region": "Lubelskie"
+  },
+  {
+    "code": "0605",
+    "name": "janowski county",
+    "region": "Lubelskie"
+  },
+  {
+    "code": "0606",
+    "name": "krasnostawski county",
+    "region": "Lubelskie"
+  },
+  {
+    "code": "0607",
+    "name": "kraśnicki county",
+    "region": "Lubelskie"
+  },
+  {
+    "code": "0608",
+    "name": "lubartowski county",
+    "region": "Lubelskie"
+  },
+  {
+    "code": "0609",
+    "name": "lubelski county",
+    "region": "Lubelskie"
+  },
+  {
+    "code": "0610",
+    "name": "łęczyński county",
+    "region": "Lubelskie"
+  },
+  {
+    "code": "0611",
+    "name": "łukowski county",
+    "region": "Lubelskie"
+  },
+  {
+    "code": "0612",
+    "name": "opolski county",
+    "region": "Lubelskie"
+  },
+  {
+    "code": "0613",
+    "name": "parczewski county",
+    "region": "Lubelskie"
+  },
+  {
+    "code": "0614",
+    "name": "puławski county",
+    "region": "Lubelskie"
+  },
+  {
+    "code": "0615",
+    "name": "radzyński county",
+    "region": "Lubelskie"
+  },
+  {
+    "code": "0616",
+    "name": "rycki county",
+    "region": "Lubelskie"
+  },
+  {
+    "code": "0617",
+    "name": "świdnicki county",
+    "region": "Lubelskie"
+  },
+  {
+    "code": "0618",
+    "name": "tomaszowski county",
+    "region": "Lubelskie"
+  },
+  {
+    "code": "0619",
+    "name": "włodawski county",
+    "region": "Lubelskie"
+  },
+  {
+    "code": "0620",
+    "name": "zamojski county",
+    "region": "Lubelskie"
+  },
+  {
+    "code": "0661",
+    "name": "Biała Podlaska (city)",
+    "region": "Lubelskie"
+  },
+  {
+    "code": "0662",
+    "name": "Chełm (city)",
+    "region": "Lubelskie"
+  },
+  {
+    "code": "0663",
+    "name": "Lublin (city)",
+    "region": "Lubelskie"
+  },
+  {
+    "code": "0664",
+    "name": "Zamość (city)",
+    "region": "Lubelskie"
+  },
+  {
+    "code": "0801",
+    "name": "gorzowski county",
+    "region": "Lubuskie"
+  },
+  {
+    "code": "0802",
+    "name": "krośnieński county",
+    "region": "Lubuskie"
+  },
+  {
+    "code": "0803",
+    "name": "międzyrzecki county",
+    "region": "Lubuskie"
+  },
+  {
+    "code": "0804",
+    "name": "nowosolski county",
+    "region": "Lubuskie"
+  },
+  {
+    "code": "0805",
+    "name": "słubicki county",
+    "region": "Lubuskie"
+  },
+  {
+    "code": "0806",
+    "name": "strzelecko-drezdenecki county",
+    "region": "Lubuskie"
+  },
+  {
+    "code": "0807",
+    "name": "sulęciński county",
+    "region": "Lubuskie"
+  },
+  {
+    "code": "0808",
+    "name": "świebodziński county",
+    "region": "Lubuskie"
+  },
+  {
+    "code": "0809",
+    "name": "zielonogórski county",
+    "region": "Lubuskie"
+  },
+  {
+    "code": "0810",
+    "name": "żagański county",
+    "region": "Lubuskie"
+  },
+  {
+    "code": "0811",
+    "name": "żarski county",
+    "region": "Lubuskie"
+  },
+  {
+    "code": "0812",
+    "name": "wschowski county",
+    "region": "Lubuskie"
+  },
+  {
+    "code": "0861",
+    "name": "Gorzów Wielkopolski (city)",
+    "region": "Lubuskie"
+  },
+  {
+    "code": "0862",
+    "name": "Zielona Góra (city)",
+    "region": "Lubuskie"
+  },
+  {
+    "code": "1001",
+    "name": "bełchatowski county",
+    "region": "Łódzkie"
+  },
+  {
+    "code": "1002",
+    "name": "kutnowski county",
+    "region": "Łódzkie"
+  },
+  {
+    "code": "1003",
+    "name": "łaski county",
+    "region": "Łódzkie"
+  },
+  {
+    "code": "1004",
+    "name": "łęczycki county",
+    "region": "Łódzkie"
+  },
+  {
+    "code": "1005",
+    "name": "łowicki county",
+    "region": "Łódzkie"
+  },
+  {
+    "code": "1006",
+    "name": "łódzki wschodni county",
+    "region": "Łódzkie"
+  },
+  {
+    "code": "1007",
+    "name": "opoczyński county",
+    "region": "Łódzkie"
+  },
+  {
+    "code": "1008",
+    "name": "pabianicki county",
+    "region": "Łódzkie"
+  },
+  {
+    "code": "1009",
+    "name": "pajęczański county",
+    "region": "Łódzkie"
+  },
+  {
+    "code": "1010",
+    "name": "piotrkowski county",
+    "region": "Łódzkie"
+  },
+  {
+    "code": "1011",
+    "name": "poddębicki county",
+    "region": "Łódzkie"
+  },
+  {
+    "code": "1012",
+    "name": "radomszczański county",
+    "region": "Łódzkie"
+  },
+  {
+    "code": "1013",
+    "name": "rawski county",
+    "region": "Łódzkie"
+  },
+  {
+    "code": "1014",
+    "name": "sieradzki county",
+    "region": "Łódzkie"
+  },
+  {
+    "code": "1015",
+    "name": "skierniewicki county",
+    "region": "Łódzkie"
+  },
+  {
+    "code": "1016",
+    "name": "tomaszowski county",
+    "region": "Łódzkie"
+  },
+  {
+    "code": "1017",
+    "name": "wieluński county",
+    "region": "Łódzkie"
+  },
+  {
+    "code": "1018",
+    "name": "wieruszowski county",
+    "region": "Łódzkie"
+  },
+  {
+    "code": "1019",
+    "name": "zduńskowolski county",
+    "region": "Łódzkie"
+  },
+  {
+    "code": "1020",
+    "name": "zgierski county",
+    "region": "Łódzkie"
+  },
+  {
+    "code": "1021",
+    "name": "brzeziński county",
+    "region": "Łódzkie"
+  },
+  {
+    "code": "1061",
+    "name": "Łódź (city)",
+    "region": "Łódzkie"
+  },
+  {
+    "code": "1062",
+    "name": "Piotrków Trybunalski (city)",
+    "region": "Łódzkie"
+  },
+  {
+    "code": "1063",
+    "name": "Skierniewice (city)",
+    "region": "Łódzkie"
+  },
+  {
+    "code": "1201",
+    "name": "bocheński county",
+    "region": "Małopolskie"
+  },
+  {
+    "code": "1202",
+    "name": "brzeski county",
+    "region": "Małopolskie"
+  },
+  {
+    "code": "1203",
+    "name": "chrzanowski county",
+    "region": "Małopolskie"
+  },
+  {
+    "code": "1204",
+    "name": "dąbrowski county",
+    "region": "Małopolskie"
+  },
+  {
+    "code": "1205",
+    "name": "gorlicki county",
+    "region": "Małopolskie"
+  },
+  {
+    "code": "1206",
+    "name": "krakowski county",
+    "region": "Małopolskie"
+  },
+  {
+    "code": "1207",
+    "name": "limanowski county",
+    "region": "Małopolskie"
+  },
+  {
+    "code": "1208",
+    "name": "miechowski county",
+    "region": "Małopolskie"
+  },
+  {
+    "code": "1209",
+    "name": "myślenicki county",
+    "region": "Małopolskie"
+  },
+  {
+    "code": "1210",
+    "name": "nowosądecki county",
+    "region": "Małopolskie"
+  },
+  {
+    "code": "1211",
+    "name": "nowotarski county",
+    "region": "Małopolskie"
+  },
+  {
+    "code": "1212",
+    "name": "olkuski county",
+    "region": "Małopolskie"
+  },
+  {
+    "code": "1213",
+    "name": "oświęcimski county",
+    "region": "Małopolskie"
+  },
+  {
+    "code": "1214",
+    "name": "proszowicki county",
+    "region": "Małopolskie"
+  },
+  {
+    "code": "1215",
+    "name": "suski county",
+    "region": "Małopolskie"
+  },
+  {
+    "code": "1216",
+    "name": "tarnowski county",
+    "region": "Małopolskie"
+  },
+  {
+    "code": "1217",
+    "name": "tatrzański county",
+    "region": "Małopolskie"
+  },
+  {
+    "code": "1218",
+    "name": "wadowicki county",
+    "region": "Małopolskie"
+  },
+  {
+    "code": "1219",
+    "name": "wielicki county",
+    "region": "Małopolskie"
+  },
+  {
+    "code": "1261",
+    "name": "Kraków (city)",
+    "region": "Małopolskie"
+  },
+  {
+    "code": "1262",
+    "name": "Nowy Sącz (city)",
+    "region": "Małopolskie"
+  },
+  {
+    "code": "1263",
+    "name": "Tarnów (city)",
+    "region": "Małopolskie"
+  },
+  {
+    "code": "1401",
+    "name": "białobrzeski county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1402",
+    "name": "ciechanowski county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1403",
+    "name": "garwoliński county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1404",
+    "name": "gostyniński county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1405",
+    "name": "grodziski county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1406",
+    "name": "grójecki county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1407",
+    "name": "kozienicki county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1408",
+    "name": "legionowski county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1409",
+    "name": "lipski county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1410",
+    "name": "łosicki county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1411",
+    "name": "makowski county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1412",
+    "name": "miński county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1413",
+    "name": "mławski county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1414",
+    "name": "nowodworski county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1415",
+    "name": "ostrołęcki county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1416",
+    "name": "ostrowski county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1417",
+    "name": "otwocki county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1418",
+    "name": "piaseczyński county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1419",
+    "name": "płocki county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1420",
+    "name": "płoński county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1421",
+    "name": "pruszkowski county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1422",
+    "name": "przasnyski county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1423",
+    "name": "przysuski county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1424",
+    "name": "pułtuski county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1425",
+    "name": "radomski county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1426",
+    "name": "siedlecki county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1427",
+    "name": "sierpecki county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1428",
+    "name": "sochaczewski county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1429",
+    "name": "sokołowski county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1430",
+    "name": "szydłowiecki county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1432",
+    "name": "warszawski zachodni county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1433",
+    "name": "węgrowski county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1434",
+    "name": "wołomiński county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1435",
+    "name": "wyszkowski county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1436",
+    "name": "zwoleński county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1437",
+    "name": "żuromiński county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1438",
+    "name": "żyrardowski county",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1461",
+    "name": "Ostrołęka (city)",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1462",
+    "name": "Płock (city)",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1463",
+    "name": "Radom (city)",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1464",
+    "name": "Siedlce (city)",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1465",
+    "name": "st. Warszawa (city)",
+    "region": "Mazowieckie"
+  },
+  {
+    "code": "1601",
+    "name": "brzeski county",
+    "region": "Opolskie"
+  },
+  {
+    "code": "1602",
+    "name": "głubczycki county",
+    "region": "Opolskie"
+  },
+  {
+    "code": "1603",
+    "name": "kędzierzyńsko-kozielski county",
+    "region": "Opolskie"
+  },
+  {
+    "code": "1604",
+    "name": "kluczborski county",
+    "region": "Opolskie"
+  },
+  {
+    "code": "1605",
+    "name": "krapkowicki county",
+    "region": "Opolskie"
+  },
+  {
+    "code": "1606",
+    "name": "namysłowski county",
+    "region": "Opolskie"
+  },
+  {
+    "code": "1607",
+    "name": "nyski county",
+    "region": "Opolskie"
+  },
+  {
+    "code": "1608",
+    "name": "oleski county",
+    "region": "Opolskie"
+  },
+  {
+    "code": "1609",
+    "name": "opolski county",
+    "region": "Opolskie"
+  },
+  {
+    "code": "1610",
+    "name": "prudnicki county",
+    "region": "Opolskie"
+  },
+  {
+    "code": "1611",
+    "name": "strzelecki county",
+    "region": "Opolskie"
+  },
+  {
+    "code": "1661",
+    "name": "Opole (city)",
+    "region": "Opolskie"
+  },
+  {
+    "code": "1801",
+    "name": "bieszczadzki county",
+    "region": "Podkarpackie"
+  },
+  {
+    "code": "1802",
+    "name": "brzozowski county",
+    "region": "Podkarpackie"
+  },
+  {
+    "code": "1803",
+    "name": "dębicki county",
+    "region": "Podkarpackie"
+  },
+  {
+    "code": "1804",
+    "name": "jarosławski county",
+    "region": "Podkarpackie"
+  },
+  {
+    "code": "1805",
+    "name": "jasielski county",
+    "region": "Podkarpackie"
+  },
+  {
+    "code": "1806",
+    "name": "kolbuszowski county",
+    "region": "Podkarpackie"
+  },
+  {
+    "code": "1807",
+    "name": "krośnieński county",
+    "region": "Podkarpackie"
+  },
+  {
+    "code": "1808",
+    "name": "leżajski county",
+    "region": "Podkarpackie"
+  },
+  {
+    "code": "1809",
+    "name": "lubaczowski county",
+    "region": "Podkarpackie"
+  },
+  {
+    "code": "1810",
+    "name": "łańcucki county",
+    "region": "Podkarpackie"
+  },
+  {
+    "code": "1811",
+    "name": "mielecki county",
+    "region": "Podkarpackie"
+  },
+  {
+    "code": "1812",
+    "name": "niżański county",
+    "region": "Podkarpackie"
+  },
+  {
+    "code": "1813",
+    "name": "przemyski county",
+    "region": "Podkarpackie"
+  },
+  {
+    "code": "1814",
+    "name": "przeworski county",
+    "region": "Podkarpackie"
+  },
+  {
+    "code": "1815",
+    "name": "ropczycko-sędziszowski county",
+    "region": "Podkarpackie"
+  },
+  {
+    "code": "1816",
+    "name": "rzeszowski county",
+    "region": "Podkarpackie"
+  },
+  {
+    "code": "1817",
+    "name": "sanocki county",
+    "region": "Podkarpackie"
+  },
+  {
+    "code": "1818",
+    "name": "stalowowolski county",
+    "region": "Podkarpackie"
+  },
+  {
+    "code": "1819",
+    "name": "strzyżowski county",
+    "region": "Podkarpackie"
+  },
+  {
+    "code": "1820",
+    "name": "tarnobrzeski county",
+    "region": "Podkarpackie"
+  },
+  {
+    "code": "1821",
+    "name": "leski county",
+    "region": "Podkarpackie"
+  },
+  {
+    "code": "1861",
+    "name": "Krosno (city)",
+    "region": "Podkarpackie"
+  },
+  {
+    "code": "1862",
+    "name": "Przemyśl (city)",
+    "region": "Podkarpackie"
+  },
+  {
+    "code": "1863",
+    "name": "Rzeszów (city)",
+    "region": "Podkarpackie"
+  },
+  {
+    "code": "1864",
+    "name": "Tarnobrzeg (city)",
+    "region": "Podkarpackie"
+  },
+  {
+    "code": "2001",
+    "name": "augustowski county",
+    "region": "Podlaskie"
+  },
+  {
+    "code": "2002",
+    "name": "białostocki county",
+    "region": "Podlaskie"
+  },
+  {
+    "code": "2003",
+    "name": "bielski county",
+    "region": "Podlaskie"
+  },
+  {
+    "code": "2004",
+    "name": "grajewski county",
+    "region": "Podlaskie"
+  },
+  {
+    "code": "2005",
+    "name": "hajnowski county",
+    "region": "Podlaskie"
+  },
+  {
+    "code": "2006",
+    "name": "kolneński county",
+    "region": "Podlaskie"
+  },
+  {
+    "code": "2007",
+    "name": "łomżyński county",
+    "region": "Podlaskie"
+  },
+  {
+    "code": "2008",
+    "name": "moniecki county",
+    "region": "Podlaskie"
+  },
+  {
+    "code": "2009",
+    "name": "sejneński county",
+    "region": "Podlaskie"
+  },
+  {
+    "code": "2010",
+    "name": "siemiatycki county",
+    "region": "Podlaskie"
+  },
+  {
+    "code": "2011",
+    "name": "sokólski county",
+    "region": "Podlaskie"
+  },
+  {
+    "code": "2012",
+    "name": "suwalski county",
+    "region": "Podlaskie"
+  },
+  {
+    "code": "2013",
+    "name": "wysokomazowiecki county",
+    "region": "Podlaskie"
+  },
+  {
+    "code": "2014",
+    "name": "zambrowski county",
+    "region": "Podlaskie"
+  },
+  {
+    "code": "2061",
+    "name": "Białystok (city)",
+    "region": "Podlaskie"
+  },
+  {
+    "code": "2062",
+    "name": "Łomża (city)",
+    "region": "Podlaskie"
+  },
+  {
+    "code": "2063",
+    "name": "Suwałki (city)",
+    "region": "Podlaskie"
+  },
+  {
+    "code": "2201",
+    "name": "bytowski county",
+    "region": "Pomorskie"
+  },
+  {
+    "code": "2202",
+    "name": "chojnicki county",
+    "region": "Pomorskie"
+  },
+  {
+    "code": "2203",
+    "name": "człuchowski county",
+    "region": "Pomorskie"
+  },
+  {
+    "code": "2204",
+    "name": "gdański county",
+    "region": "Pomorskie"
+  },
+  {
+    "code": "2205",
+    "name": "kartuski county",
+    "region": "Pomorskie"
+  },
+  {
+    "code": "2206",
+    "name": "kościerski county",
+    "region": "Pomorskie"
+  },
+  {
+    "code": "2207",
+    "name": "kwidzyński county",
+    "region": "Pomorskie"
+  },
+  {
+    "code": "2208",
+    "name": "lęborski county",
+    "region": "Pomorskie"
+  },
+  {
+    "code": "2209",
+    "name": "malborski county",
+    "region": "Pomorskie"
+  },
+  {
+    "code": "2210",
+    "name": "nowodworski county",
+    "region": "Pomorskie"
+  },
+  {
+    "code": "2211",
+    "name": "pucki county",
+    "region": "Pomorskie"
+  },
+  {
+    "code": "2212",
+    "name": "słupski county",
+    "region": "Pomorskie"
+  },
+  {
+    "code": "2213",
+    "name": "starogardzki county",
+    "region": "Pomorskie"
+  },
+  {
+    "code": "2214",
+    "name": "tczewski county",
+    "region": "Pomorskie"
+  },
+  {
+    "code": "2215",
+    "name": "wejherowski county",
+    "region": "Pomorskie"
+  },
+  {
+    "code": "2216",
+    "name": "sztumski county",
+    "region": "Pomorskie"
+  },
+  {
+    "code": "2261",
+    "name": "Gdańsk (city)",
+    "region": "Pomorskie"
+  },
+  {
+    "code": "2262",
+    "name": "Gdynia (city)",
+    "region": "Pomorskie"
+  },
+  {
+    "code": "2263",
+    "name": "Słupsk (city)",
+    "region": "Pomorskie"
+  },
+  {
+    "code": "2264",
+    "name": "Sopot (city)",
+    "region": "Pomorskie"
+  },
+  {
+    "code": "2401",
+    "name": "będziński county",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2402",
+    "name": "bielski county",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2403",
+    "name": "cieszyński county",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2404",
+    "name": "częstochowski county",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2405",
+    "name": "gliwicki county",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2406",
+    "name": "kłobucki county",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2407",
+    "name": "lubliniecki county",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2408",
+    "name": "mikołowski county",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2409",
+    "name": "myszkowski county",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2410",
+    "name": "pszczyński county",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2411",
+    "name": "raciborski county",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2412",
+    "name": "rybnicki county",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2413",
+    "name": "tarnogórski county",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2414",
+    "name": "bieruńsko-lędziński county",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2415",
+    "name": "wodzisławski county",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2416",
+    "name": "zawierciański county",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2417",
+    "name": "żywiecki county",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2461",
+    "name": "Bielsko-Biała (city)",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2462",
+    "name": "Bytom (city)",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2463",
+    "name": "Chorzów (city)",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2464",
+    "name": "Częstochowa (city)",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2465",
+    "name": "Dąbrowa Górnicza (city)",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2466",
+    "name": "Gliwice (city)",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2467",
+    "name": "Jastrzębie-Zdrój (city)",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2468",
+    "name": "Jaworzno (city)",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2469",
+    "name": "Katowice (city)",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2470",
+    "name": "Mysłowice (city)",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2471",
+    "name": "Piekary Śląskie (city)",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2472",
+    "name": "Ruda Śląska (city)",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2473",
+    "name": "Rybnik (city)",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2474",
+    "name": "Siemianowice Śląskie (city)",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2475",
+    "name": "Sosnowiec (city)",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2476",
+    "name": "Świętochłowice (city)",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2477",
+    "name": "Tychy (city)",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2478",
+    "name": "Zabrze (city)",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2479",
+    "name": "Żory (city)",
+    "region": "Śląskie"
+  },
+  {
+    "code": "2601",
+    "name": "buski county",
+    "region": "Świętokrzyskie"
+  },
+  {
+    "code": "2602",
+    "name": "jędrzejowski county",
+    "region": "Świętokrzyskie"
+  },
+  {
+    "code": "2603",
+    "name": "kazimierski county",
+    "region": "Świętokrzyskie"
+  },
+  {
+    "code": "2604",
+    "name": "kielecki county",
+    "region": "Świętokrzyskie"
+  },
+  {
+    "code": "2605",
+    "name": "konecki county",
+    "region": "Świętokrzyskie"
+  },
+  {
+    "code": "2606",
+    "name": "opatowski county",
+    "region": "Świętokrzyskie"
+  },
+  {
+    "code": "2607",
+    "name": "ostrowiecki county",
+    "region": "Świętokrzyskie"
+  },
+  {
+    "code": "2608",
+    "name": "pińczowski county",
+    "region": "Świętokrzyskie"
+  },
+  {
+    "code": "2609",
+    "name": "sandomierski county",
+    "region": "Świętokrzyskie"
+  },
+  {
+    "code": "2610",
+    "name": "skarżyski county",
+    "region": "Świętokrzyskie"
+  },
+  {
+    "code": "2611",
+    "name": "starachowicki county",
+    "region": "Świętokrzyskie"
+  },
+  {
+    "code": "2612",
+    "name": "staszowski county",
+    "region": "Świętokrzyskie"
+  },
+  {
+    "code": "2613",
+    "name": "włoszczowski county",
+    "region": "Świętokrzyskie"
+  },
+  {
+    "code": "2661",
+    "name": "Kielce (city)",
+    "region": "Świętokrzyskie"
+  },
+  {
+    "code": "2801",
+    "name": "bartoszycki county",
+    "region": "Warmińsko-Mazurskie"
+  },
+  {
+    "code": "2802",
+    "name": "braniewski county",
+    "region": "Warmińsko-Mazurskie"
+  },
+  {
+    "code": "2803",
+    "name": "działdowski county",
+    "region": "Warmińsko-Mazurskie"
+  },
+  {
+    "code": "2804",
+    "name": "elbląski county",
+    "region": "Warmińsko-Mazurskie"
+  },
+  {
+    "code": "2805",
+    "name": "ełcki county",
+    "region": "Warmińsko-Mazurskie"
+  },
+  {
+    "code": "2806",
+    "name": "giżycki county",
+    "region": "Warmińsko-Mazurskie"
+  },
+  {
+    "code": "2807",
+    "name": "iławski county",
+    "region": "Warmińsko-Mazurskie"
+  },
+  {
+    "code": "2808",
+    "name": "kętrzyński county",
+    "region": "Warmińsko-Mazurskie"
+  },
+  {
+    "code": "2809",
+    "name": "lidzbarski county",
+    "region": "Warmińsko-Mazurskie"
+  },
+  {
+    "code": "2810",
+    "name": "mrągowski county",
+    "region": "Warmińsko-Mazurskie"
+  },
+  {
+    "code": "2811",
+    "name": "nidzicki county",
+    "region": "Warmińsko-Mazurskie"
+  },
+  {
+    "code": "2812",
+    "name": "nowomiejski county",
+    "region": "Warmińsko-Mazurskie"
+  },
+  {
+    "code": "2813",
+    "name": "olecki county",
+    "region": "Warmińsko-Mazurskie"
+  },
+  {
+    "code": "2814",
+    "name": "olsztyński county",
+    "region": "Warmińsko-Mazurskie"
+  },
+  {
+    "code": "2815",
+    "name": "ostródzki county",
+    "region": "Warmińsko-Mazurskie"
+  },
+  {
+    "code": "2816",
+    "name": "piski county",
+    "region": "Warmińsko-Mazurskie"
+  },
+  {
+    "code": "2817",
+    "name": "szczycieński county",
+    "region": "Warmińsko-Mazurskie"
+  },
+  {
+    "code": "2818",
+    "name": "gołdapski county",
+    "region": "Warmińsko-Mazurskie"
+  },
+  {
+    "code": "2819",
+    "name": "węgorzewski county",
+    "region": "Warmińsko-Mazurskie"
+  },
+  {
+    "code": "2861",
+    "name": "Elbląg (city)",
+    "region": "Warmińsko-Mazurskie"
+  },
+  {
+    "code": "2862",
+    "name": "Olsztyn (city)",
+    "region": "Warmińsko-Mazurskie"
+  },
+  {
+    "code": "3001",
+    "name": "chodzieski county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3002",
+    "name": "czarnkowsko-trzcianecki county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3003",
+    "name": "gnieźnieński county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3004",
+    "name": "gostyński county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3005",
+    "name": "grodziski county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3006",
+    "name": "jarociński county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3007",
+    "name": "kaliski county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3008",
+    "name": "kępiński county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3009",
+    "name": "kolski county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3010",
+    "name": "koniński county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3011",
+    "name": "kościański county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3012",
+    "name": "krotoszyński county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3013",
+    "name": "leszczyński county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3014",
+    "name": "międzychodzki county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3015",
+    "name": "nowotomyski county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3016",
+    "name": "obornicki county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3017",
+    "name": "ostrowski county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3018",
+    "name": "ostrzeszowski county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3019",
+    "name": "pilski county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3020",
+    "name": "pleszewski county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3021",
+    "name": "poznański county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3022",
+    "name": "rawicki county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3023",
+    "name": "słupecki county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3024",
+    "name": "szamotulski county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3025",
+    "name": "średzki county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3026",
+    "name": "śremski county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3027",
+    "name": "turecki county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3028",
+    "name": "wągrowiecki county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3029",
+    "name": "wolsztyński county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3030",
+    "name": "wrzesiński county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3031",
+    "name": "złotowski county",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3061",
+    "name": "Kalisz (city)",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3062",
+    "name": "Konin (city)",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3063",
+    "name": "Leszno (city)",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3064",
+    "name": "Poznań (city)",
+    "region": "Wielkopolskie"
+  },
+  {
+    "code": "3201",
+    "name": "białogardzki county",
+    "region": "Zachodniopomorskie"
+  },
+  {
+    "code": "3202",
+    "name": "choszczeński county",
+    "region": "Zachodniopomorskie"
+  },
+  {
+    "code": "3203",
+    "name": "drawski county",
+    "region": "Zachodniopomorskie"
+  },
+  {
+    "code": "3204",
+    "name": "goleniowski county",
+    "region": "Zachodniopomorskie"
+  },
+  {
+    "code": "3205",
+    "name": "gryficki county",
+    "region": "Zachodniopomorskie"
+  },
+  {
+    "code": "3206",
+    "name": "gryfiński county",
+    "region": "Zachodniopomorskie"
+  },
+  {
+    "code": "3207",
+    "name": "kamieński county",
+    "region": "Zachodniopomorskie"
+  },
+  {
+    "code": "3208",
+    "name": "kołobrzeski county",
+    "region": "Zachodniopomorskie"
+  },
+  {
+    "code": "3209",
+    "name": "koszaliński county",
+    "region": "Zachodniopomorskie"
+  },
+  {
+    "code": "3210",
+    "name": "myśliborski county",
+    "region": "Zachodniopomorskie"
+  },
+  {
+    "code": "3211",
+    "name": "policki county",
+    "region": "Zachodniopomorskie"
+  },
+  {
+    "code": "3212",
+    "name": "pyrzycki county",
+    "region": "Zachodniopomorskie"
+  },
+  {
+    "code": "3213",
+    "name": "sławieński county",
+    "region": "Zachodniopomorskie"
+  },
+  {
+    "code": "3214",
+    "name": "stargardzki county",
+    "region": "Zachodniopomorskie"
+  },
+  {
+    "code": "3215",
+    "name": "szczecinecki county",
+    "region": "Zachodniopomorskie"
+  },
+  {
+    "code": "3216",
+    "name": "świdwiński county",
+    "region": "Zachodniopomorskie"
+  },
+  {
+    "code": "3217",
+    "name": "wałecki county",
+    "region": "Zachodniopomorskie"
+  },
+  {
+    "code": "3218",
+    "name": "łobeski county",
+    "region": "Zachodniopomorskie"
+  },
+  {
+    "code": "3261",
+    "name": "Koszalin (city)",
+    "region": "Zachodniopomorskie"
+  },
+  {
+    "code": "3262",
+    "name": "Szczecin (city)",
+    "region": "Zachodniopomorskie"
+  },
+  {
+    "code": "3263",
+    "name": "Świnoujście (city)",
+    "region": "Zachodniopomorskie"
+  }
+]

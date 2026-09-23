@@ -14,6 +14,10 @@ import { RadarPanel } from '../radar/RadarPanel';
 import { LocationPicker } from './LocationPicker';
 import { ForecastSheet } from '../forecast/ForecastSheet';
 import { type Place } from '../../providers/openMeteo';
+import { useWarnings } from '../warnings/useWarnings';
+import { WarningsSheet, severityColors } from '../warnings/WarningsSheet';
+import { areaLabel } from '../warnings/areas';
+import { warningPhase, warningsForArea, warningSummary } from '../../providers/imgw';
 
 function Button({ label, children, onPress, disabled = false }: {
   label: string; children: React.ReactNode; onPress: () => void; disabled?: boolean;
@@ -29,6 +33,8 @@ export function MapScreen() {
   const network = useNetInfo();
   const offline = network.isConnected === false || network.isInternetReachable === false;
   const radar = useRadar(offline);
+  const warnings = useWarnings(offline);
+  const [warningsOpen, setWarningsOpen] = useState(false);
   const radarTileError = radar.onTileError;
   const camera = useRef<CameraRef>(null);
   const current = useRef<SavedCamera>(DEFAULT_CAMERA);
@@ -84,6 +90,8 @@ export function MapScreen() {
   const placeName = namedPlace && Math.abs(center[0] - namedPlace.center[0]) < 0.001 && Math.abs(center[1] - namedPlace.center[1]) < 0.001
     ? namedPlace.name : nearGdynia ? 'Gdynia' : `${center[1].toFixed(3)}°, ${center[0].toFixed(3)}°`;
   function openSheet() { if (radar.playing) radar.togglePlay(); }
+  const activeWarnings = warningsForArea(warnings.data, warnings.area).filter(w => warningPhase(w, warnings.now) === 'active');
+  const highestSeverity = activeWarnings.reduce<1 | 2 | 3>((level, w) => w.severity > level ? w.severity : level, 1);
   return <View style={[styles.screen, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
     <View style={styles.mapArea}>
       {initial && <Map mapStyle={lightMapStyle} style={StyleSheet.absoluteFill} attribution={false}
@@ -110,7 +118,14 @@ export function MapScreen() {
           <Text style={[styles.rainText, radar.enabled && styles.rainTextActive]}>☂  Rain</Text>
         </Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel="Forecast for map center" style={styles.rainPill}
-          onPress={() => { openSheet(); setForecastPlace({ name: placeName, center }); }}><Text style={styles.rainText}>Forecast</Text></Pressable></View>
+          onPress={() => { openSheet(); setForecastPlace({ name: placeName, center }); }}><Text style={styles.rainText}>Forecast</Text></Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel="Open weather warnings" style={styles.rainPill}
+          onPress={() => { openSheet(); setWarningsOpen(true); }}><Text style={styles.rainText}>Warnings</Text></Pressable></View>
+        {warnings.area && <Pressable accessibilityRole="button" accessibilityLabel={`Warnings for ${areaLabel(warnings.area)}. ${warningSummary(warnings.data, warnings.area, warnings.now, warnings.fetchedAt, offline, warnings.error)}`}
+          onPress={() => { openSheet(); setWarningsOpen(true); }} style={[styles.warningBanner, activeWarnings.length > 0 && { backgroundColor: severityColors(highestSeverity).backgroundColor }]}>
+          <Text numberOfLines={1} style={styles.credit}>IMGW-PIB · {areaLabel(warnings.area)} · manual area</Text>
+          <Text style={[styles.warningText, activeWarnings.length > 0 && { color: severityColors(highestSeverity).color }]}>{warningSummary(warnings.data, warnings.area, warnings.now, warnings.fetchedAt, offline, warnings.error)}</Text>
+        </Pressable>}
         {(offline || mapError || !loaded) && <View accessibilityLiveRegion="polite" style={styles.notice}>
           {!loaded && !offline && !mapError && <ActivityIndicator color={theme.color.accent} />}
           <Text style={styles.noticeText}>{offline ? 'Offline · only previously loaded map areas are available.' : mapError ? 'The map could not load completely. Some areas may be missing.' : 'Loading map…'}</Text>
@@ -135,6 +150,7 @@ export function MapScreen() {
     <RadarPanel radar={radar} />
     {modal && <LocationPicker current={{ name: placeName, center }} offline={offline} onSelect={selectPlace} onClose={() => setModal(false)} />}
     {forecastPlace && <ForecastSheet place={forecastPlace} offline={offline} onClose={() => setForecastPlace(null)} />}
+    {warningsOpen && <WarningsSheet state={warnings} onClose={() => setWarningsOpen(false)} />}
   </View>;
 }
 
@@ -144,6 +160,8 @@ const styles = StyleSheet.create({
   mapArea: { flex: 1, minHeight: 240 },
   top: { position: 'absolute', top: 16, left: 16, right: 16, gap: 8 },
   layerRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  warningBanner: { backgroundColor: c.surface, borderRadius: 12, padding: 12, minHeight: 48, gap: 4 },
+  warningText: { color: c.text, fontSize: 14, fontWeight: '600' },
   location: { backgroundColor: c.surface, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12, elevation: 3, minHeight: 48 },
   eyebrow: { color: c.muted, fontSize: 11, letterSpacing: 1.4, fontWeight: '600' },
   title: { color: c.text, fontSize: 18, fontWeight: '600' },

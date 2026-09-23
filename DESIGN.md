@@ -24,6 +24,12 @@ Portrait Android screen dominated by the map (roughly 70% of available height). 
 
 All app copy and accessibility labels are English, never Polish.
 
+M4 source-content exception approved on 2026-09-22: show IMGW warnings verbatim
+under "Original warning · Polish", including event name, comments, issuing office
+and mandatory original source credit. Controls, status and date formatting remain
+English. Official geographic names are preserved. The selected warning county is
+explicit and independent of the map camera or GPS; no inferred warning polygons.
+
 At the top: rounded location/search control, then compact Rain and Warnings controls. Only expose completed features. At the right: locate and zoom buttons. Keep map and weather credits visible above the bottom sheet.
 
 At the bottom: a compact white sheet with Rain radar, selected frame time, freshness indicator, provider-matched intensity legend, play/pause and a time scrubber. Show the actual available range rather than assuming every frame exists. A restrained expandable row holds opacity and layer settings. Forecast is secondary, not a large dashboard displacing the map.

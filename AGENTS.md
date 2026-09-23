@@ -11,6 +11,10 @@ Read DESIGN.md, MILESTONES.md and SETUP.md before implementing. Work in mileston
 
 Use the user-provided `ui mockup.png` as the visual design reference, specifically its leftmost `01 / LIGHT` concept for M1–M2. DESIGN.md records how to apply it. All app copy remains English even where the reference uses Polish.
 
+M4 language exception approved by the user on 2026-09-22: keep controls and status
+messages English, but show clearly labeled original Polish IMGW warning text
+and the provider's required source credit. Preserve the official wording.
+
 ## Technical direction
 - Expo with a custom Android development build, React Native, strict TypeScript.
 - MapLibre React Native for native map rendering. It does not work in Expo Go.

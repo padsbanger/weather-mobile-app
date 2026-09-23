@@ -1,8 +1,8 @@
 # Weather Radar — Android
 
 Personal-use, English-language native map and rain history application. M1 is
-approved; M2 is approved and committed. M3 adds location search, favorites and an
-hourly forecast sheet for review. No Expo Go,
+approved; M2 and M3 are approved and committed. M4 adds IMGW warnings for review.
+No Expo Go,
 account, backend or API token is needed. This development app requires Metro;
 a standalone release APK is the separate M6 deliverable.
 
@@ -35,6 +35,7 @@ npx.cmd expo-doctor
 npm.cmd run smoke:map
 npm.cmd run smoke:radar
 npm.cmd run smoke:forecast
+npm.cmd run smoke:warnings
 
 # Start an Android Studio emulator, or connect a phone with USB debugging.
 # First build, and after native dependency/config changes:
@@ -73,6 +74,36 @@ adb shell am start -a android.intent.action.VIEW -d 'exp+weather-radar://expo-de
 The Android directory is generated and ignored. Keep durable changes in Expo
 configuration or the versioned dependency patch; never store signing keys in git.
 `npm ci` must run lifecycle scripts so the no-prefetch MapLibre patch is applied.
+
+## Expo cloud release APK
+
+```powershell
+# Once per computer: sign in to your Expo account.
+npx.cmd --yes eas-cli@24.7.0 login
+
+# Build a signed Android APK on Expo's EAS Build service.
+npm.cmd run release
+```
+
+On the first build, follow the prompts to create/link the Expo project and
+generate or select its Android signing keystore. Keep the resulting project ID
+in `app.json` and back up the signing credentials outside git. An Expo developer
+account is needed for this cloud build; the installed weather app needs no account.
+
+The pinned CLI uses the `release` profile in `eas.json`: Android only, internal
+distribution, APK, and no development client. The resulting release is intended
+to launch without Metro. EAS prints a build URL with the downloadable APK when
+complete. This command does not submit to Google Play or publish an OTA update.
+Versioning remains local in `app.json`; increment `android.versionCode` when needed.
+
+The ignored generated `android/` directory is rebuilt by EAS from Expo config.
+The npm lockfile and MapLibre patch are included; `postinstall` applies the patch
+before native compilation. `artifacts/` and signing files stay excluded from upload
+through `.gitignore`. No cloud build has been submitted or verified by adding this
+script; standalone APK/device acceptance remains part of M6.
+
+References: [Expo APK builds](https://docs.expo.dev/build-reference/apk/) and
+[first-build setup](https://docs.expo.dev/build/setup/).
 
 ## App behavior
 
@@ -139,6 +170,43 @@ verifies actual English geocoding and hourly forecast responses; artifacts are
 written under `artifacts/`. M3 checks: typecheck, lint, 11 tests, Android build
 and emulator interactions. Physical phone, TalkBack/large fonts and prolonged
 lifecycle checks remain pending; see MILESTONES.md for the exact coverage.
+
+## Weather warnings (M4)
+
+Tap Warnings and choose a county or All Poland. County search works offline using
+the bundled official 2026 GUS catalogue. The chosen warning area persists and is
+independent of the map center or GPS. The map banner names that area; tap it for
+the warning list. No warning polygons, notifications or background monitoring.
+
+Cards show severity levels 1–3 in text and color, validity times and affected
+counties. Open a card for the full original Polish event, text, comment and issuing
+office, alongside English controls/status. This source-language exception was
+explicitly approved. Dates use Europe/Warsaw, including daylight-saving changes;
+publication, validity and successful fetch times are separate.
+
+The feed refreshes every five minutes while the app is foregrounded. Offline or
+failed requests retain saved warnings, qualified as unconfirmed. At 15 minutes
+the feed is stale. Invalid partial feeds cannot imply no active warnings. Expired
+warnings leave the active count at their validity boundary; they remain inspectable
+until a later successful feed replaces them. A successful empty feed clears old
+records. The sheet links official IMGW information and both providers' credits.
+
+M4 requires no new native dependency; use the existing M2/M3 development client
+and Metro commands above. Verification commands:
+
+```powershell
+npm.cmd run typecheck
+npm.cmd run lint
+npm.cmd test
+npm.cmd run smoke:warnings
+npx.cmd expo run:android --no-bundler
+```
+
+The Android build and emulator checks passed, including real warning details,
+offline persistence, area matching, no-active-warning state and expiry across a
+temporarily advanced emulator clock (then restored). Physical phone/TalkBack,
+injected network/invalid-provider failures and live bulletin withdrawal remain
+unverified on device. Tests cover these parsing/state boundaries; see MILESTONES.md.
 
 ## Dependency audit
 
