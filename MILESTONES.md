@@ -1,6 +1,6 @@
 # Milestones
 
-M1 is complete, approved and committed as `b25a8ff`. M2 is committed as `b9d9dc1`; M3 as `281b553`, both approved. M4 is complete and approved, with verified checks and remaining device coverage below. M5–M6 remain pending. Pause after each milestone and commit only after user approval.
+M1 is complete, approved and committed as `b25a8ff`. M2 is committed as `b9d9dc1`; M3 as `281b553`; M4 as `f654254`, all approved. M5 is implemented and awaits user review; M6 remains pending. Pause after each milestone and commit only after user approval.
 
 ## M1 — Android foundation and base map
 - [x] Scaffold compatible Expo/React Native/TypeScript and MapLibre development build.
@@ -33,11 +33,11 @@ Exit: observed radar and model forecast are clearly distinguished.
 Exit: useful in-app warnings without background-location or push infrastructure.
 
 ## M5 — Dark mode by local time
-- [ ] Add complete dark UI and compatible dark basemap.
-- [ ] Auto schedule (default 07:00/19:00), manual overrides and persistence.
-- [ ] Recompute after app resume and time/timezone changes.
-- [ ] Preserve camera and radar state through style reloads.
-- [ ] Test boundaries, overnight schedules, daylight-saving behavior and overrides.
+- [x] Add complete dark UI and compatible dark basemap.
+- [x] Auto schedule (default 07:00/19:00), manual overrides and persistence.
+- [x] Recompute after app resume and time/timezone changes.
+- [x] Preserve camera and radar state through style reloads.
+- [x] Test boundaries, overnight schedules, daylight-saving behavior and overrides.
 Exit: automatic switching works without background permissions; radar stays readable.
 
 ## M6 — Personal-use release
@@ -303,3 +303,41 @@ For each completed milestone record: changes, commands/checks actually run, devi
   script is included in the approved commit. An Expo project ID and explicit
   foreground location permissions had also been added to app.json locally; these
   are preserved in the commit. No release build or credentials are claimed.
+
+### M5 — 2026-09-23 — implemented, awaiting approval
+
+- Added semantic dark colors across the map controls, radar panel, location,
+  forecast and warning sheets. The visual direction follows the middle dark
+  concept in `ui mockup.png`. English UI remains in place, with the previously
+  approved original Polish IMGW warning text and source statements.
+- Added OpenFreeMap's real dark vector style. The map keeps one native MapLibre
+  view; changing styles retains the camera and radar state. A radar staging
+  layer stays below each style's opaque `background` layer. This also avoids
+  a MapLibre 11.4 Android crash when changing `beforeId` while a style reloads.
+  The radar palette is unchanged; the legend now shows source colors without
+  applying the user's layer opacity to its swatches. Visible attribution
+  changes with the selected basemap. Provider terms and an actual vector tile
+  check are recorded in `PROVIDERS.md`.
+- Theme settings offer Automatic, Light and Dark. Automatic uses device-local
+  civil time: light 07:00 inclusive to 19:00 exclusive by default. The two
+  configurable hours can cross midnight; equal endpoints are disallowed.
+  Preferences persist. The app recalculates at schedule boundaries, at least
+  every 30 foreground seconds for timezone/clock changes, and on resume.
+  There is no background timer or permission. A short map opacity transition
+  respects the Android reduced-motion setting.
+- Passed `npm.cmd run typecheck`, `npm.cmd run lint`, `npm.cmd test` (22 tests),
+  `npx.cmd expo install --check`, `npx.cmd expo-doctor` (21/21) and
+  `npx.cmd expo run:android --no-bundler` (debug APK, Pixel_10 Android 16/API 36).
+  Theme tests cover exact 07:00/19:00 boundaries, overnight schedules, manual
+  overrides, invalid saved settings and Warsaw spring/autumn DST hours.
+- On the emulator, switched light → dark → light → dark → Auto with actual
+  basemap tiles and credits visible. The camera center remained 54.476°,
+  18.544°; radar playback continued across a style switch. Force-stopping
+  and reopening restored the manual Dark choice; selecting Auto returned to
+  Light at the emulator's local 16:40. Android Back closed the theme sheet.
+  Screenshots under ignored `artifacts/m5-*.png` record these checks.
+- Not yet checked on a physical device: real clock/timezone change or a live
+  DST crossing, reduced-motion transition, TalkBack/large fonts, poor-network
+  style reload, and long-running playback/memory. The debug APK still needs
+  Metro; standalone release verification is M6. M5 is uncommitted pending user
+  approval.

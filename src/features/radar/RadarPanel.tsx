@@ -1,11 +1,14 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { formatFrameDate, formatFrameTime, frameKey, isStale, RADAR_LEGEND } from '../../providers/rainviewer';
-import { theme } from '../../theme/tokens';
+import { type ThemeColors } from '../../theme/tokens';
+import { useTheme } from '../../theme/ThemeProvider';
 import { type useRadar } from './useRadar';
 
 export function RadarPanel({ radar }: { radar: ReturnType<typeof useRadar> }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [expanded, setExpanded] = useState(false);
   const frames = radar.data?.frames ?? [];
   const displayed = radar.displayed?.frame;
@@ -37,7 +40,7 @@ export function RadarPanel({ radar }: { radar: ReturnType<typeof useRadar> }) {
     {failed && <Text style={styles.warning}>The provider returned no history. This does not mean no rain.</Text>}
     {!!radar.data?.rejected && <Text style={styles.warning}>Partial history · some invalid frames were omitted.</Text>}
     <View accessible accessibilityLabel="Radar reflectivity legend, Universal Blue, 15 to 50 dBZ" style={styles.legend}>
-      <View style={styles.colors}>{RADAR_LEGEND.map((stop) => <View key={stop.dbz} style={[styles.swatch, { backgroundColor: stop.color, opacity: radar.opacity }]} />)}</View>
+      <View style={styles.colors}>{RADAR_LEGEND.map((stop) => <View key={stop.dbz} style={[styles.swatch, { backgroundColor: stop.color }]} />)}</View>
       <View style={styles.row}>{RADAR_LEGEND.map((stop) => <Text key={stop.dbz} style={styles.legendLabel}>{stop.dbz}</Text>)}</View>
       <Text style={styles.note}>Reflectivity (dBZ) · weaker → stronger</Text>
     </View>
@@ -52,7 +55,7 @@ export function RadarPanel({ radar }: { radar: ReturnType<typeof useRadar> }) {
         <Slider accessibilityLabel="Radar frame timeline" accessibilityValue={{ text: selected ? formatFrameDate(selected.time) : 'No frame selected' }}
           style={styles.slider} minimumValue={0} maximumValue={Math.max(1, frames.length - 1)} step={1}
           value={Math.max(0, index)} disabled={!radar.enabled || coolingDown || frames.length < 2}
-          minimumTrackTintColor={theme.color.accent} maximumTrackTintColor={theme.color.border} thumbTintColor={theme.color.accent}
+          minimumTrackTintColor={colors.accent} maximumTrackTintColor={colors.border} thumbTintColor={colors.accent}
           onValueChange={(value) => { const frame = frames[Math.round(value)]; if (frame) radar.select(frame); }} />
         <View style={styles.row}><Text style={styles.note}>{frames[0] ? formatFrameTime(frames[0].time) : '—'}</Text>
           <Text style={styles.note}>{newest ? formatFrameTime(newest.time) : '—'}</Text></View>
@@ -62,7 +65,7 @@ export function RadarPanel({ radar }: { radar: ReturnType<typeof useRadar> }) {
     {expanded && <ScrollView style={styles.details} contentContainerStyle={styles.detailsContent}>
       <Text style={styles.time}>Radar opacity · {Math.round(radar.opacity * 100)}%</Text>
       <Slider accessibilityLabel="Radar opacity" minimumValue={0.1} maximumValue={1} step={0.05} value={radar.opacity}
-        onSlidingComplete={radar.setOpacity} style={styles.slider} minimumTrackTintColor={theme.color.accent} thumbTintColor={theme.color.accent} />
+        onSlidingComplete={radar.setOpacity} style={styles.slider} minimumTrackTintColor={colors.accent} thumbTintColor={colors.accent} />
       <Text style={styles.note}>Displayed frame: {displayed ? formatFrameDate(displayed.time) : 'none'}</Text>
       <Text style={styles.note}>Last successful fetch: {radar.fetchedAt ? formatFrameDate(radar.fetchedAt) : 'not yet'}</Text>
       <Text style={styles.note}>Frame time is the provider’s composite generation time. Individual radar observations can be older. Times use your device’s timezone.</Text>
@@ -73,8 +76,7 @@ export function RadarPanel({ radar }: { radar: ReturnType<typeof useRadar> }) {
   </View>;
 }
 
-const c = theme.color;
-const styles = StyleSheet.create({
+function makeStyles(c: ThemeColors) { return StyleSheet.create({
   panel: { backgroundColor: c.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 20, paddingTop: 10, paddingBottom: 12, borderTopWidth: 1, borderColor: c.border },
   handle: { width: 36, height: 4, borderRadius: 2, backgroundColor: c.border, alignSelf: 'center', marginBottom: 8 },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
@@ -87,7 +89,7 @@ const styles = StyleSheet.create({
   swatch: { flex: 1 }, legendLabel: { flex: 1, textAlign: 'center', fontSize: 10, color: c.muted },
   playback: { flexDirection: 'row', alignItems: 'center', gap: 16, marginVertical: 8 },
   play: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', backgroundColor: c.accent },
-  playText: { fontSize: 24, color: c.surface }, dim: { opacity: 0.45 },
+  playText: { fontSize: 24, color: c.onAccent }, dim: { opacity: 0.45 },
   slider: { height: 48, width: '100%' }, details: { maxHeight: 190, marginTop: 8 }, detailsContent: { gap: 8 },
   latest: { minHeight: 48, justifyContent: 'center' }, link: { color: c.accent, fontSize: 15 },
-});
+}); }

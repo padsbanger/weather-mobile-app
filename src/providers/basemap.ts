@@ -8,6 +8,11 @@ export const basemap = {
   attributionUrl: 'https://www.openstreetmap.org/copyright',
   userAgent: 'WeatherRadarPersonal/0.1 (Android; pl.konta.weatherradar)',
 };
+export const darkBasemap = {
+  style: 'https://tiles.openfreemap.org/styles/dark',
+  attribution: '© OpenMapTiles · OpenStreetMap · OpenFreeMap',
+  attributionUrl: 'https://openfreemap.org/',
+};
 
 export function configureMapRequests() {
   TransformRequestManager.addHeader({

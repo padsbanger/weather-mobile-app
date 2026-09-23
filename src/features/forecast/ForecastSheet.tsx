@@ -1,10 +1,14 @@
 import { ActivityIndicator, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { hourLabel, forecastStale, upcomingHours, type Place } from '../../providers/openMeteo';
-import { theme } from '../../theme/tokens';
+import { useMemo } from 'react';
+import { type ThemeColors } from '../../theme/tokens';
+import { useTheme } from '../../theme/ThemeProvider';
 import { useForecast } from './useForecast';
 
 export function ForecastSheet({ place, offline, onClose }: { place: Place; offline: boolean; onClose: () => void }) {
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const forecast = useForecast(place.center, offline);
   const hours = forecast.data ? upcomingHours(forecast.data, forecast.now) : [];
@@ -19,7 +23,7 @@ export function ForecastSheet({ place, offline, onClose }: { place: Place; offli
           <Pressable accessibilityRole="link" style={s.button} onPress={() => { void Linking.openURL('https://open-meteo.com/'); }}><Text style={s.link}>Weather data by Open-Meteo · CC BY 4.0</Text></Pressable>
           <Text style={s.body}>Location: {place.center[1].toFixed(2)}°, {place.center[0].toFixed(2)}°</Text>
           {offline && <Text style={s.notice}>Offline · showing saved forecast if available.</Text>}
-          {forecast.loading && <View accessibilityLiveRegion="polite"><ActivityIndicator color={theme.color.accent} /><Text style={s.body}>Loading forecast…</Text></View>}
+          {forecast.loading && <View accessibilityLiveRegion="polite"><ActivityIndicator color={colors.accent} /><Text style={s.body}>Loading forecast…</Text></View>}
           {forecast.error && <Text accessibilityLiveRegion="polite" style={s.notice}>Forecast could not refresh. Saved values may be outdated. Reopen this sheet to retry.</Text>}
           {forecast.cacheError && <Text style={s.notice}>Forecast storage is unavailable. Offline access may not work.</Text>}
           {forecast.data && <>
@@ -40,8 +44,7 @@ export function ForecastSheet({ place, offline, onClose }: { place: Place; offli
     </View>
   </Modal>;
 }
-const c = theme.color;
-const s = StyleSheet.create({
+function makeStyles(c: ThemeColors) { return StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: c.scrim, justifyContent: 'flex-end' },
   panel: { maxHeight: '92%', backgroundColor: c.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, flexShrink: 1 },
   header: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 12 },
@@ -51,4 +54,4 @@ const s = StyleSheet.create({
   hour: { borderTopWidth: 1, borderColor: c.border, paddingTop: 12, gap: 6 },
   metrics: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 8 },
   button: { minHeight: 48, justifyContent: 'center', paddingHorizontal: 8 }, link: { color: c.accent, fontSize: 16 },
-});
+}); }

@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, AppState, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fetchJson, locationKey, parsePlace, parseSearch, searchUrl, type Place } from '../../providers/openMeteo';
-import { theme } from '../../theme/tokens';
+import { type ThemeColors } from '../../theme/tokens';
+import { useTheme } from '../../theme/ThemeProvider';
 
 const FAVORITES = 'weather-radar.favorites.v1';
 let writes = Promise.resolve();
@@ -13,9 +14,13 @@ function persistFavorites(next: Place[]) {
   return result;
 }
 function Action({ label, onPress, disabled = false }: { label: string; onPress: () => void; disabled?: boolean }) {
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return <Pressable accessibilityRole="button" accessibilityState={{ disabled }} disabled={disabled} onPress={onPress} style={[s.button, disabled && s.dim]}><Text style={s.link}>{label}</Text></Pressable>;
 }
 export function LocationPicker({ current, offline, onSelect, onClose }: { current: Place; offline: boolean; onSelect: (place: Place) => void; onClose: () => void }) {
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Place[]>([]);
@@ -71,9 +76,9 @@ export function LocationPicker({ current, offline, onSelect, onClose }: { curren
       <View style={s.header}><Text style={s.heading}>Choose a location</Text>{button('Close', onClose)}</View>
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.content}>
         <Text style={s.body}>Search a city or postal code. Selecting a place moves the map; Forecast uses its center.</Text>
-        <TextInput accessibilityLabel="Search city or postal code" placeholder="City, country" placeholderTextColor={theme.color.muted} value={query} maxLength={100} onChangeText={value => { request.current?.abort(); request.current = null; setBusy(false); setResults([]); setMessage(''); setQuery(value); }} onSubmitEditing={() => { void search(); }} returnKeyType="search" style={s.input} />
+        <TextInput accessibilityLabel="Search city or postal code" placeholder="City, country" placeholderTextColor={colors.muted} value={query} maxLength={100} onChangeText={value => { request.current?.abort(); request.current = null; setBusy(false); setResults([]); setMessage(''); setQuery(value); }} onSubmitEditing={() => { void search(); }} returnKeyType="search" style={s.input} />
         <Action label="Search" onPress={() => { void search(); }} disabled={busy || offline || query.trim().length < 2} />
-        {busy && <ActivityIndicator accessibilityLabel="Searching places" color={theme.color.accent} />}
+        {busy && <ActivityIndicator accessibilityLabel="Searching places" color={colors.accent} />}
         {offline && <Text style={s.notice}>Offline · search is unavailable. Favorites and coordinates still work.</Text>}
         {!!message && <Text accessibilityLiveRegion="polite" style={s.notice}>{message}</Text>}
         {results.map((place, i) => <View key={`${place.name}-${i}`}>{button(place.name, () => onSelect(place))}</View>)}
@@ -100,11 +105,10 @@ export function LocationPicker({ current, offline, onSelect, onClose }: { curren
     </View>
   </Modal>;
 }
-const c = theme.color;
-const s = StyleSheet.create({
+function makeStyles(c: ThemeColors) { return StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: c.background }, header: { paddingHorizontal: 20, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' },
   content: { padding: 20, gap: 12 }, heading: { color: c.text, fontSize: 22, fontWeight: '700' }, body: { color: c.muted, fontSize: 15, lineHeight: 22 },
   button: { minHeight: 48, padding: 12, justifyContent: 'center', borderRadius: 12, backgroundColor: c.surface }, link: { color: c.accent, fontSize: 16 }, dim: { opacity: 0.5 },
   input: { minHeight: 48, borderWidth: 1, borderColor: c.border, borderRadius: 12, padding: 12, color: c.text, backgroundColor: c.surface, fontSize: 18 },
   notice: { padding: 12, color: c.warning, backgroundColor: c.warningSurface, borderRadius: 12 }, favorite: { borderWidth: 1, borderColor: c.border, borderRadius: 12, overflow: 'hidden' },
-});
+}); }

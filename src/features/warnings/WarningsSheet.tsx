@@ -1,26 +1,32 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ActivityIndicator, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { warningDate, warningPhase, warningsForArea, warningsStale, warningSummary, type WeatherWarning } from '../../providers/imgw';
-import { theme } from '../../theme/tokens';
+import { type ThemeColors } from '../../theme/tokens';
+import { useTheme } from '../../theme/ThemeProvider';
 import { areaLabel, searchAreas, validArea } from './areas';
 import { type WarningsState } from './useWarnings';
 
-export function severityColors(level: 1 | 2 | 3) {
-  const c = theme.color;
+export function severityColors(level: 1 | 2 | 3, c: ThemeColors) {
   return level === 3 ? { color: c.severity3, backgroundColor: c.severity3Surface } : level === 2
     ? { color: c.severity2, backgroundColor: c.severity2Surface } : { color: c.severity1, backgroundColor: c.severity1Surface };
 }
 function Action({ label, onPress }: { label: string; onPress: () => void }) {
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return <Pressable accessibilityRole="button" onPress={onPress} style={s.button}><Text style={s.link}>{label}</Text></Pressable>;
 }
 function CountyCredit() {
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return <View style={s.source}>
     <Pressable accessibilityRole="link" style={s.button} onPress={() => { void Linking.openURL('https://stat.gov.pl/statystyka-regionalna/jednostki-terytorialne/system-kts/jednostki-kts-i-ich-symbole/'); }}><Text style={s.link}>County catalogue: Statistics Poland ↗</Text></Pressable>
     <Text style={s.small}>2026 KTS/TERYT table · downloaded 22 Sept 2026. Names reformatted; county/city labels translated.</Text>
   </View>;
 }
 function SourceCredit() {
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   return <View style={s.source}>
     <Pressable accessibilityRole="link" style={s.button} onPress={() => { void Linking.openURL('https://meteo.imgw.pl/dyn/index.html#osmet=true'); }}><Text style={s.link}>Official warnings · IMGW-PIB ↗</Text></Pressable>
     <Text style={s.small}>Source credit (original Polish):</Text>
@@ -31,9 +37,11 @@ function SourceCredit() {
   </View>;
 }
 function WarningDetails({ warning, now }: { warning: WeatherWarning; now: number }) {
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const phase = warningPhase(warning, now);
   return <View style={s.content}>
-    <Text style={[s.badge, severityColors(warning.severity)]}>Level {warning.severity} of 3 · {phase === 'expired' ? 'Expired' : phase === 'upcoming' ? 'Upcoming' : 'Active'}</Text>
+    <Text style={[s.badge, severityColors(warning.severity, colors)]}>Level {warning.severity} of 3 · {phase === 'expired' ? 'Expired' : phase === 'upcoming' ? 'Upcoming' : 'Active'}</Text>
     <Text style={s.heading}>Warning details</Text>
     <Text style={s.body}>Affected areas: {warning.areas.map(areaLabel).join('; ')}</Text>
     <Text style={s.body}>Valid from: {warningDate(warning.start)}</Text>
@@ -53,6 +61,8 @@ function WarningDetails({ warning, now }: { warning: WeatherWarning; now: number
   </View>;
 }
 export function WarningsSheet({ state, onClose }: { state: WarningsState; onClose: () => void }) {
+  const { colors } = useTheme();
+  const s = useMemo(() => makeStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const [picker, setPicker] = useState(!state.area);
   const [query, setQuery] = useState('');
@@ -75,7 +85,7 @@ export function WarningsSheet({ state, onClose }: { state: WarningsState; onClos
         </View>
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.content}>
           <Text style={s.body}>IMGW-PIB · Poland · in-app warnings only</Text>
-          {state.loading && <View accessibilityLiveRegion="polite"><ActivityIndicator color={theme.color.accent} /><Text style={s.body}>Checking warnings…</Text></View>}
+          {state.loading && <View accessibilityLiveRegion="polite"><ActivityIndicator color={colors.accent} /><Text style={s.body}>Checking warnings…</Text></View>}
           {state.offline && <Text style={s.notice}>Offline · saved warnings may have changed or been withdrawn.</Text>}
           {state.error && <Text accessibilityLiveRegion="polite" style={s.notice}>IMGW could not be refreshed. Current warning status is unconfirmed. Retrying while the app is open.</Text>}
           {stale && <Text style={s.notice}>Outdated feed · last checked at least 15 minutes ago, or the device clock changed.</Text>}
@@ -84,7 +94,7 @@ export function WarningsSheet({ state, onClose }: { state: WarningsState; onClos
           {!!state.fetchedAt && <Text style={s.small}>Last successful check: {warningDate(state.fetchedAt)}</Text>}
           {picker ? <>
             <Text style={s.body}>Choose a county explicitly. This selection does not follow the map or GPS.</Text>
-            <TextInput accessibilityLabel="Search warning county or TERYT code" placeholder="County, city or code" placeholderTextColor={theme.color.muted} value={query} onChangeText={setQuery} maxLength={100} style={s.input} />
+            <TextInput accessibilityLabel="Search warning county or TERYT code" placeholder="County, city or code" placeholderTextColor={colors.muted} value={query} onChangeText={setQuery} maxLength={100} style={s.input} />
             {!query.trim() && <>
               <Action label="All Poland" onPress={() => choose('*')} />
               <Action label={areaLabel('2262')} onPress={() => choose('2262')} />
@@ -103,8 +113,8 @@ export function WarningsSheet({ state, onClose }: { state: WarningsState; onClos
               <Text style={s.small}>Manual area selection · independent of map/GPS. All times: Europe/Warsaw.</Text>
               <Text accessibilityLiveRegion="polite" style={s.title}>{warningSummary(state.data, state.area, state.now, state.fetchedAt, state.offline, state.error)}</Text>
               {!state.data && !state.loading && <Text style={s.notice}>No saved warning feed is available. This does not mean there are no warnings.</Text>}
-              {current.map(w => <Pressable key={w.id} accessibilityRole="button" accessibilityLabel={`Open level ${w.severity} ${warningPhase(w, state.now)} warning`} style={[s.card, { backgroundColor: severityColors(w.severity).backgroundColor }]} onPress={() => setSelectedId(w.id)}>
-                <Text style={[s.title, { color: severityColors(w.severity).color }]}>Level {w.severity} of 3 · {warningPhase(w, state.now) === 'upcoming' ? 'Upcoming' : 'Active'}</Text>
+              {current.map(w => <Pressable key={w.id} accessibilityRole="button" accessibilityLabel={`Open level ${w.severity} ${warningPhase(w, state.now)} warning`} style={[s.card, { backgroundColor: severityColors(w.severity, colors).backgroundColor }]} onPress={() => setSelectedId(w.id)}>
+                <Text style={[s.title, { color: severityColors(w.severity, colors).color }]}>Level {w.severity} of 3 · {warningPhase(w, state.now) === 'upcoming' ? 'Upcoming' : 'Active'}</Text>
                 <Text style={s.small}>Original event name · Polish</Text><Text style={s.title}>{w.event}</Text>
                 <Text style={s.body}>{w.areas.map(areaLabel).join('; ')}</Text>
                 <Text style={s.body}>From {warningDate(w.start)}{ '\n' }Until {warningDate(w.end)}</Text>
@@ -119,8 +129,7 @@ export function WarningsSheet({ state, onClose }: { state: WarningsState; onClos
     </View>
   </Modal>;
 }
-const c = theme.color;
-const s = StyleSheet.create({
+function makeStyles(c: ThemeColors) { return StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: c.scrim, justifyContent: 'flex-end' },
   panel: { height: '96%', backgroundColor: c.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24 },
   header: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 12 },
@@ -131,4 +140,4 @@ const s = StyleSheet.create({
   input: { minHeight: 48, borderWidth: 1, borderColor: c.border, borderRadius: 12, padding: 12, color: c.text, backgroundColor: c.surface, fontSize: 18 },
   card: { padding: 16, borderRadius: 16, gap: 8, minHeight: 48 }, badge: { padding: 12, borderRadius: 12, fontSize: 17, fontWeight: '700' },
   source: { gap: 8, borderTopWidth: 1, borderColor: c.border, paddingTop: 12 },
-});
+}); }

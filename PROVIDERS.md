@@ -23,7 +23,7 @@ not a paid SLA. Recheck the policy before distributing the app or increasing use
 - Configuration and style are isolated in `src/providers/basemap.ts`. A future
   provider switch requires editing this module and checking the new policy.
   This is the authentic OSM light cartographic style, without precipitation
-  recoloring or demo tiles. A dark basemap remains an M5 decision.
+  recoloring or demo tiles. M5 adds a separate dark vector style below.
 - Tile requests disclose the viewed area and IP address to OSM's service.
   GPS is requested only by an explicit tap; coordinates are kept locally as
   the map camera, never sent to a geocoding service in M1.
@@ -48,6 +48,28 @@ and cached requests received HTTP 304 responses. Verbose logging was removed
 after verification. Disabling Wi-Fi and mobile data retained the cached viewport
 and displayed the offline notice (translated to English after the initial M1 check). This does not provide offline download
 functionality or guarantee cache coverage.
+
+## Dark base map (M5): OpenFreeMap
+
+The dark mode uses `https://tiles.openfreemap.org/styles/dark`, a hosted
+MapLibre style with vector tiles. It is separate from the OSM standard raster
+service used in light mode and never recolors the RainViewer overlay. The
+style's OpenMapTiles source declares OpenStreetMap data attribution. The map
+visibly links `© OpenMapTiles · OpenStreetMap · OpenFreeMap` to OpenFreeMap.
+OpenFreeMap does not require a key, account, or payment. The public service is
+best effort, without an uptime guarantee. Its terms prohibit automated
+harvesting; the app loads ordinary viewport tiles only, uses the native cache,
+and does not create offline packs or prefetch basemap regions. The tile service
+receives the viewed area and IP address. No private key is bundled.
+
+Checked 2026-09-23 against the provider's [homepage](https://openfreemap.org/)
+and [terms](https://openfreemap.org/tos/). The actual dark style returned JSON
+with 47 layers, a vector source, glyphs and sprites. The source metadata at
+`https://tiles.openfreemap.org/planet` returned its current tile template and
+maximum zoom 14. One Gdynia tile from that template at z7/x70/y40 returned
+140,127 bytes of `application/vnd.mapbox-vector-tile` and a public max-age
+31,536,000 cache header. That dated tile path was checked only during
+verification; the application always follows the current style/source URLs.
 
 ## Radar (M2): RainViewer
 

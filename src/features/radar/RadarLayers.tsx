@@ -10,7 +10,7 @@ export function RadarLayers({ displayed, staged, enabled, opacity }: {
     <RasterSource key={slot.id} id={slot.id} tiles={[radarTiles(slot.frame)]} tileSize={256} maxzoom={RADAR_SOURCE_ZOOM}>
       {/* The opaque basemap hides this staging layer, while native loads only
           its viewport tiles. At most one adjacent frame is staged at a time. */}
-      <Layer id={`radar-preload-${slot.id}`} type="raster" beforeId="basemap"
+      <Layer id={`radar-preload-${slot.id}`} type="raster" beforeId="background"
         paint={{ 'raster-opacity': 1, 'raster-fade-duration': 0 }} />
       <Layer id={`radar-visible-${slot.id}`} type="raster"
         paint={{ 'raster-opacity': slot.id === displayed?.id ? opacity : 0, 'raster-fade-duration': 0 }} />
