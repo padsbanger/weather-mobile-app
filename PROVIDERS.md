@@ -1,10 +1,10 @@
 # Providers
 
-The 2026-09-23 UI follow-up removed map and radar credits from the primary
-screen at the user's request. OpenFreeMap and RainViewer still require visible
-attribution under their current terms. The existing provider arrangement
-therefore needs an attribution solution before distribution; earlier notes
-below describe the credited implementation and provider checks.
+The current map has no visible OpenMapTiles, OpenStreetMap or RainViewer credit
+strip, following the user's UI request. OpenFreeMap and RainViewer still require
+visible attribution; this build should not be distributed until that conflict
+is resolved. The dark style is a local retint of OpenFreeMap vector layers;
+the provider URLs and radar colors are unchanged.
 
 ## Light base map (UI tuning, 2026-09-23): OpenFreeMap Positron
 
@@ -12,9 +12,10 @@ The light map now uses `https://tiles.openfreemap.org/styles/positron` through
 MapLibre Native. It replaces the OSM standard raster below, whose labels were
 baked into the image. The vector style lets the radar sit above land, roads and
 water while map labels remain above it. The precipitation palette is unchanged.
-The dark map continues to use OpenFreeMap's dark style. Both styles require
-`© OpenMapTiles · © OpenStreetMap contributors · OpenFreeMap` credit, currently
-absent from the map UI following the later user request above.
+The dark map uses a retinted snapshot of OpenFreeMap's dark vector style.
+The map and radar credit strip is currently hidden in both themes at the
+user's request. OpenFreeMap's homepage says its own name in the credit is
+optional, while attribution to its data sources remains required.
 
 The [OpenFreeMap homepage](https://openfreemap.org/), [mobile integration
 guide](https://openfreemap.org/quick_start/) and [terms](https://openfreemap.org/tos/)
@@ -93,8 +94,7 @@ The dark mode uses a bundled snapshot of OpenFreeMap's
 `https://tiles.openfreemap.org/styles/dark` MapLibre vector style. Both light
 and dark modes use OpenFreeMap vector resources and never recolor the
 RainViewer overlay. The style's OpenMapTiles source declares OpenStreetMap data
-attribution. The earlier implementation linked the required credit on the map;
-the current UI has removed it as noted above.
+attribution. The current UI omits those credits at the user's request.
 OpenFreeMap does not require a key, account, or payment. The public service is
 best effort, without an uptime guarantee. Its terms prohibit automated
 harvesting; the app loads ordinary viewport tiles only, uses the native cache,
@@ -117,7 +117,7 @@ Checked 2026-09-22 against the [API terms](https://www.rainviewer.com/api.html),
 [transition summary](https://www.rainviewer.com/api/transition-faq.html) and
 [color table](https://www.rainviewer.com/api/color-schemes.html).
 Personal use is permitted without an account/token. RainViewer requires visible
-linked credit, which the current map UI has removed as noted above. Service
+linked credit, which the current map UI omits at the user's request. Service
 availability and regional coverage are not guaranteed.
 
 The transition summary is stricter than the general FAQ: use past history only,

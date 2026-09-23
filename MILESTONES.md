@@ -1,5 +1,62 @@
 # Milestones
 
+## Dark map and dock refinement — 2026-09-23 — awaiting review
+
+- Retinted the bundled dark OpenFreeMap vector layers: slate land, blue water,
+  brighter roads and place labels. The radar style and palette are unchanged.
+- The map headline resolves saved place metadata or an on-demand GPS reverse
+  geocode, falling back to coordinates away from the selected place. The dock
+  uses one 48 dp chevron to reveal radar details, one outline icon family for
+  its five actions, and a cyan selected background. Sheet routing now renders
+  one modal at a time. The dock grows into two action
+  lines for enlarged system text; at 320 dp its labels fit in one line at
+  normal text size.
+- Type checking, lint, all 27 tests, the live map resource smoke check and a
+  signed release build passed. The APK launched without Metro on an Android
+  16/API 36 emulator. Captured the actual dark screen at normal size, 320 dp,
+  and 320 dp with 150% system text; the collapsed dock measured about 166 dp
+  at 320 dp. The navigation bar remained visible.
+- Manually opened Layers, Forecast, Warnings, Settings and location selection;
+  Android Back closed sheets and expanded radar details. Playback stayed active
+  after opening Forecast and switching between light and dark themes. The
+  expanded panel exposed the dBZ legend and opacity control. Selecting Warsaw
+  through search updated and cached the headline; a requested emulator GPS fix
+  resolved to Sopot and survived restart. Open-Meteo forecast rows loaded in
+  the final APK. The IMGW warning endpoint returned HTTP 404 with "No products
+  were found" during this check; the warning sheet displayed its unconfirmed
+  error state, so live warning records could not be verified. No
+  physical-device or pinch gesture check was performed.
+- Screenshots: `artifacts/refined-dark-final.png`,
+  `artifacts/refined-dark-320dp-final.png`,
+  `artifacts/refined-dark-320dp-large-font.png`, and
+  `artifacts/refined-expanded-final.png`. The installable APK is
+  `artifacts/weather-radar-release.apk`. This work is uncommitted.
+- Follow-up: removed the map and radar credit strip at the user's request.
+  The map now reaches the dock without an attribution row. The provider terms
+  still require visible attribution, so this build is unsuitable for
+  distribution until that conflict is resolved. The rebuilt APK and Android
+  screenshot `artifacts/refined-no-credits.png` verify the strip is gone.
+
+## Radar meter control — 2026-09-23 — awaiting review
+
+- The latest follow-up removed the separate chevron. The small meter icon now
+  opens and closes both the intensity scale and radar details. Type checking,
+  lint and a signed release build passed. On Pixel_10 Android 16/API 36 at
+  360×640 dp, tapping the icon opened the scale and details, including the
+  newest-frame action; tapping it again collapsed the panel. Screenshots:
+  `artifacts/single-meter-closed.png` and `artifacts/single-meter-open.png`.
+- Replaced the playback row's Latest text action with a 48 dp toggle for the
+  dBZ intensity meter. After user review, its visible icon was reduced to a
+  small unboxed symbol using muted/active theme colors. The newest-frame
+  action remains in expanded radar details. Type checking and lint passed.
+  The revised signed release APK built and launched without Metro on Pixel_10
+  Android 16/API 36. At the
+  360×640 dp viewport the icon opened the labeled 15–50 dBZ scale and closed
+  it on a second tap. The reduced icon and its active state were visually checked
+  in `artifacts/rain-meter-small-icon.png` and
+  `artifacts/rain-meter-small-icon-open.png`.
+  This follow-up is uncommitted pending review.
+
 ## Unified bottom control bar — 2026-09-23 — approved
 
 - Follow-up removed the solid screen-color backdrop around and below the bar.

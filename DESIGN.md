@@ -1,6 +1,35 @@
 # Design — light radar first
 
+## Dark map and compact dock refinement (2026-09-23)
+
+The bundled dark OpenFreeMap vector style uses slate land, blue water, brighter
+roads and legible place labels. Radar layer colors and placement are unchanged.
+The map headline uses saved selected-place metadata, including the default
+location's metadata, or the name returned for an on-demand GPS fix. It falls
+back to coordinates when the camera moves away or no name is available.
+
+The dock has 16 dp side margins. Its first row contains play/pause, a flexible
+history timeline and an expand chevron. The chevron opens reflectivity,
+coverage, opacity, frame information and secondary controls. A short status
+line keeps stale, failed, offline, partial and unverified coverage states
+visible while collapsed. The five bottom actions use one Ionicons outline
+family and a subtle cyan selected background; Locate remains momentary. At
+larger system text sizes, the action row wraps into two lines so labels stay
+readable and touch targets remain generous. The user removed the map and radar
+credit strip, leaving the map visible immediately above the dock. Only one
+modal sheet is rendered at a time; Android Back closes it.
+
 ## Unified control bar (2026-09-23)
+
+This earlier layout was superseded by the dark map and compact dock refinement
+above.
+
+The playback row uses a small, unboxed meter icon in place of the Latest
+text action. Its 48 dp touch target stays accessible while the visible symbol
+matches the size and muted color of neighboring controls. It is the only
+expand/collapse control in the playback row: tapping it reveals the compact
+15–50 dBZ reflectivity scale and radar details. The Latest frame action
+remains in those details.
 
 The new user reference places playback and the five primary actions in one
 rounded bottom surface: Layers, Forecast, Warnings, Locate and Settings. The
@@ -9,12 +38,12 @@ safe area, so the panel floats over geography without a solid backing strip.
 The bottom controls still sit inside the Android safe area. The map top shows
 the selected place and displayed radar time. Active warnings get
 a small indicator on the Warnings action; county selection and full details
-remain in its sheet. The radar timeline, Latest and expand control share the
-upper row of the surface. Expanded radar information retains opacity, the dBZ
+remain in its sheet. The radar timeline and meter control share the upper row
+of the surface. Expanded radar information retains opacity, the dBZ
 legend, frame/fetch times and coverage explanation. The collapsed surface keeps
 a short coverage caveat. Manual location selection and zoom actions are in
-Settings; map gestures remain available. No map credits are displayed, following
-the earlier user request and the distribution limitation in PROVIDERS.md.
+Settings; map gestures remain available. Map and radar credits are now visible
+above the dock under the newer user instruction.
 
 ## UI tuning first pass (2026-09-23)
 

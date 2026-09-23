@@ -17,6 +17,9 @@ assert.equal(bundled.layers.find(layer => layer.id === 'radar-label-anchor')?.ty
 assert.ok(bundled.layers.findIndex(layer => layer.id === 'radar-label-anchor') < bundled.layers.findIndex(layer => layer.id === 'label_city'));
 assert.equal(dark.layers.find(layer => layer.id === 'radar-label-anchor')?.type, 'background');
 assert.ok(dark.layers.findIndex(layer => layer.id === 'radar-label-anchor') < dark.layers.findIndex(layer => layer.id === 'place_city'));
+assert.equal(dark.layers.find(layer => layer.id === 'background')?.paint?.['background-color'], '#1A2B3D');
+assert.equal(dark.layers.find(layer => layer.id === 'water')?.paint?.['fill-color'], '#0D4261');
+assert.equal(dark.layers.find(layer => layer.id === 'place_city')?.paint?.['text-color'], '#D3E1EE');
 assert.equal(bundled.sources.openmaptiles.url, style.sources.openmaptiles.url);
 assert.ok(style.layers.some(layer => layer.id === 'waterway_line_label' && layer.type === 'symbol'));
 assert.ok(style.layers.some(layer => layer.id === 'label_city' && layer.type === 'symbol'));

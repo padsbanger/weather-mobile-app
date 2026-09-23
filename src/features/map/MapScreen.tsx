@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Animated, AppState, StyleSheet, Text, View } from 'react-native';
+import * as ExpoLocation from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNetInfo } from '@react-native-community/netinfo';
@@ -16,7 +17,7 @@ import { RadarPanel } from '../radar/RadarPanel';
 import { LocationPicker } from './LocationPicker';
 import { LayersSheet } from './LayersSheet';
 import { ForecastSheet } from '../forecast/ForecastSheet';
-import { type Place } from '../../providers/openMeteo';
+import { parsePlace, type Place } from '../../providers/openMeteo';
 import { useWarnings } from '../warnings/useWarnings';
 import { WarningsSheet, severityColors } from '../warnings/WarningsSheet';
 import { areaLabel } from '../warnings/areas';
@@ -26,12 +27,16 @@ import { LightningSheet } from '../lightning/LightningSheet';
 import { useLightning } from '../lightning/useLightning';
 import { type Bounds } from '../../providers/dmiLightning';
 import { formatFrameTime, isStale } from '../../providers/rainviewer';
+import { DEFAULT_PLACE, SELECTED_PLACE_KEY, placeHeadline } from './selectedPlace';
+
+type Sheet = 'layers' | 'forecast' | 'warnings' | 'location' | 'settings' | 'lightning' | null;
+type Action = 'layers' | 'forecast' | 'warnings' | 'settings';
 
 export function MapScreen() {
   const { colors, resolved, reducedMotion, storageError: themeStorageError } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
-  const [themeOpen, setThemeOpen] = useState(false);
-  const [layersOpen, setLayersOpen] = useState(false);
+  const [sheet, setSheet] = useState<Sheet>(null);
+  const [activeAction, setActiveAction] = useState<Action>('layers');
   const [mapOpacity] = useState(() => new Animated.Value(1));
   const previousTheme = useRef(resolved);
   const transitioning = useRef(false);
@@ -41,9 +46,7 @@ export function MapScreen() {
   const radar = useRadar(offline);
   const warnings = useWarnings(offline);
   const lightning = useLightning(offline);
-  const [lightningOpen, setLightningOpen] = useState(false);
   const [lightningMaxAge, setLightningMaxAge] = useState<10 | 30 | 60>(60);
-  const [warningsOpen, setWarningsOpen] = useState(false);
   const radarTileError = radar.onTileError;
   const camera = useRef<CameraRef>(null);
   const map = useRef<MapRef>(null);
@@ -54,10 +57,29 @@ export function MapScreen() {
   const [loaded, setLoaded] = useState(false);
   const [mapError, setMapError] = useState(false);
   const [storageError, setStorageError] = useState(false);
-  const [modal, setModal] = useState(false);
   const [forecastPlace, setForecastPlace] = useState<Place | null>(null);
   const [namedPlace, setNamedPlace] = useState<Place | null>(null);
-  const location = useRequestedLocation((coordinates) => camera.current?.easeTo({ center: coordinates, zoom: 11, duration: 500 }));
+  const geocodeGeneration = useRef(0);
+  function savePlace(place: Place) {
+    setNamedPlace(place);
+    writes.current = writes.current.then(() => AsyncStorage.setItem(SELECTED_PLACE_KEY, JSON.stringify(place)))
+      .catch(() => { setStorageError(true); });
+  }
+  const location = useRequestedLocation((coordinates) => {
+    const generation = ++geocodeGeneration.current;
+    setNamedPlace(null);
+    writes.current = writes.current.then(() => AsyncStorage.removeItem(SELECTED_PLACE_KEY))
+      .catch(() => { setStorageError(true); });
+    camera.current?.easeTo({ center: coordinates, zoom: 11, duration: 500 });
+    if (AppState.currentState !== 'active') return;
+    void ExpoLocation.reverseGeocodeAsync({ latitude: coordinates[1], longitude: coordinates[0] })
+      .then(addresses => {
+        if (generation !== geocodeGeneration.current || AppState.currentState !== 'active') return;
+        const address = addresses[0];
+        const name = address?.city || address?.district || address?.subregion || address?.region || address?.country;
+        if (name) savePlace({ name, center: coordinates });
+      }).catch(() => {}); // Coordinates remain available when reverse geocoding fails.
+  });
 
   useEffect(() => {
     if (previousTheme.current === resolved) return;
@@ -76,10 +98,26 @@ export function MapScreen() {
 
   useEffect(() => {
     let active = true;
-    void AsyncStorage.getItem(CAMERA_KEY).then((raw) => {
-      const saved = raw ? parseCamera(JSON.parse(raw)) : null;
-      if (active) { current.current = saved ?? DEFAULT_CAMERA; setInitial(current.current); setCenter(current.current.center); }
-    }).catch(() => { if (active) { setStorageError(true); setInitial(DEFAULT_CAMERA); } });
+    void Promise.allSettled([AsyncStorage.getItem(CAMERA_KEY), AsyncStorage.getItem(SELECTED_PLACE_KEY)]).then(([cameraResult, placeResult]) => {
+      if (!active) return;
+      let saved: SavedCamera | null = null;
+      let place: Place | null = null;
+      try { if (cameraResult.status === 'fulfilled' && cameraResult.value) saved = parseCamera(JSON.parse(cameraResult.value)); }
+      catch { setStorageError(true); }
+      try { if (placeResult.status === 'fulfilled' && placeResult.value) place = parsePlace(JSON.parse(placeResult.value)); }
+      catch { setStorageError(true); }
+      if (cameraResult.status === 'rejected' || placeResult.status === 'rejected') setStorageError(true);
+      current.current = saved ?? DEFAULT_CAMERA;
+      setInitial(current.current); setCenter(current.current.center);
+      const atDefaultPlace = Math.abs(current.current.center[0] - DEFAULT_PLACE.center[0]) < 0.1 &&
+        Math.abs(current.current.center[1] - DEFAULT_PLACE.center[1]) < 0.1;
+      const selected = place ?? (atDefaultPlace ? DEFAULT_PLACE : null);
+      setNamedPlace(selected);
+      if (selected === DEFAULT_PLACE) {
+        writes.current = writes.current.then(() => AsyncStorage.setItem(SELECTED_PLACE_KEY, JSON.stringify(DEFAULT_PLACE)))
+          .catch(() => { setStorageError(true); });
+      }
+    });
     LogManager.onLog(({ level, message }) => {
       if ((level === 'error' || level === 'warn') && /tile|http|source/i.test(message) && !/cancel/i.test(message)) {
         if (!/source radar-|rainviewer|radar tile budget|dmi-lightning/i.test(message)) setMapError(true);
@@ -106,15 +144,14 @@ export function MapScreen() {
   }
 
   function selectPlace(place: Place) {
-    setNamedPlace(place); setCenter(place.center);
+    geocodeGeneration.current++;
+    savePlace(place); setCenter(place.center);
     camera.current?.easeTo({ center: place.center, zoom: 10, duration: 400 });
-    setModal(false);
+    setSheet(null);
   }
 
-  const nearGdynia = Math.abs(center[0] - 18.538) < 0.02 && Math.abs(center[1] - 54.5189) < 0.02;
-  const placeName = namedPlace && Math.abs(center[0] - namedPlace.center[0]) < 0.001 && Math.abs(center[1] - namedPlace.center[1]) < 0.001
-    ? namedPlace.name : nearGdynia ? 'Gdynia' : `${center[1].toFixed(3)}°, ${center[0].toFixed(3)}°`;
-  function openSheet() { if (radar.playing) radar.togglePlay(); }
+  const placeName = placeHeadline(namedPlace, center);
+  function openSheet(next: Exclude<Sheet, null>) { setSheet(next); }
   async function currentBounds(): Promise<Bounds | null> {
     try { return await map.current?.getBounds() ?? null; } catch { return null; }
   }
@@ -156,22 +193,22 @@ export function MapScreen() {
       {themeStorageError && <Text style={styles.feedback}>Theme settings could not be saved.</Text>}
       {storageError && <Text style={styles.feedback}>Settings could not be saved. The map may return to Gdynia when you restart the app.</Text>}
     </View>
-    <RadarPanel radar={radar} layersActive={radar.enabled || lightning.enabled}
+    <RadarPanel radar={radar} activeAction={activeAction}
       warningActive={activeWarnings.length > 0} warningColor={severityColors(highestSeverity, colors).color} warningLabel={warningLabel}
-      locating={location.busy} onLayers={() => { openSheet(); setLayersOpen(true); }}
-      onForecast={() => { openSheet(); setForecastPlace({ name: placeName, center }); }}
-      onWarnings={() => { openSheet(); setWarningsOpen(true); }}
-      onLocate={() => { void location.locate(); }} onSettings={() => { openSheet(); setThemeOpen(true); }} />
-    {layersOpen && <LayersSheet rainEnabled={radar.enabled} onRainChange={() => radar.setEnabled(!radar.enabled)} lightningEnabled={lightning.enabled}
-      onLightningChange={() => lightning.setVisible(!lightning.enabled)} onLightningDetails={() => { setLayersOpen(false); setLightningOpen(true); }} onClose={() => setLayersOpen(false)} />}
-    {modal && <LocationPicker current={{ name: placeName, center }} offline={offline} onSelect={selectPlace} onClose={() => setModal(false)} />}
-    {forecastPlace && <ForecastSheet place={forecastPlace} offline={offline} onClose={() => setForecastPlace(null)} />}
-    {themeOpen && <ThemeSheet currentLocation={placeName} onChooseLocation={() => { setThemeOpen(false); setModal(true); }}
+      locating={location.busy} onLayers={() => { setActiveAction('layers'); openSheet('layers'); }}
+      onForecast={() => { setActiveAction('forecast'); setForecastPlace({ name: placeName, center }); openSheet('forecast'); }}
+      onWarnings={() => { setActiveAction('warnings'); openSheet('warnings'); }}
+      onLocate={() => { void location.locate(); }} onSettings={() => { setActiveAction('settings'); openSheet('settings'); }} />
+    {sheet === 'layers' && <LayersSheet rainEnabled={radar.enabled} onRainChange={() => radar.setEnabled(!radar.enabled)} lightningEnabled={lightning.enabled}
+      onLightningChange={() => lightning.setVisible(!lightning.enabled)} onLightningDetails={() => openSheet('lightning')} onClose={() => setSheet(null)} />}
+    {sheet === 'location' && <LocationPicker current={{ name: placeName, center }} offline={offline} onSelect={selectPlace} onClose={() => setSheet(null)} />}
+    {sheet === 'forecast' && forecastPlace && <ForecastSheet place={forecastPlace} offline={offline} onClose={() => setSheet(null)} />}
+    {sheet === 'settings' && <ThemeSheet currentLocation={placeName} onChooseLocation={() => openSheet('location')}
       onZoomIn={() => camera.current?.zoomTo(Math.min(18, current.current.zoom + 1), { duration: 250 })}
       onZoomOut={() => camera.current?.zoomTo(Math.max(2, current.current.zoom - 1), { duration: 250 })}
-      onClose={() => setThemeOpen(false)} />}
-    {warningsOpen && <WarningsSheet state={warnings} onClose={() => setWarningsOpen(false)} />}
-    {lightningOpen && <LightningSheet lightning={lightning} maxAge={lightningMaxAge} setMaxAge={setLightningMaxAge} currentBounds={currentBounds} onClose={() => setLightningOpen(false)} />}
+      onClose={() => setSheet(null)} />}
+    {sheet === 'warnings' && <WarningsSheet state={warnings} onClose={() => setSheet(null)} />}
+    {sheet === 'lightning' && <LightningSheet lightning={lightning} maxAge={lightningMaxAge} setMaxAge={setLightningMaxAge} currentBounds={currentBounds} onClose={() => setSheet(null)} />}
   </View>;
 }
 
