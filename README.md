@@ -1,6 +1,6 @@
 ﻿# Weather Radar for Android
 
-A personal-use, English-language Android app with a native MapLibre map, past RainViewer rain radar, hourly Open-Meteo forecast, IMGW weather warnings, and automatic light/dark themes. Original IMGW warning text and required source statements remain in Polish. There is no account, backend, lightning layer, or Expo Go support.
+A personal-use, English-language Android app with a native MapLibre map, past RainViewer rain radar, hourly Open-Meteo forecast, IMGW weather warnings, DMI lightning observations, and automatic light/dark themes. Original IMGW warning text and required source statements remain in Polish. There is no account, backend, or Expo Go support.
 
 ## Install the standalone APK
 
@@ -50,9 +50,11 @@ The map starts at Gdynia or the last saved camera. The location button requests 
 
 Forecast is model output for the selected map center: next 24 hourly precipitation chances/amounts, temperature, and wind. It is distinct from observed radar. Warnings use a manually chosen Polish county or All Poland; the choice does not follow GPS. The app shows the full original bulletin, severity, validity and source credit. No push or background alerts are provided. Theme settings offer Auto (device-local light 07:00–19:00 by default), Light and Dark, with configurable hours.
 
+Lightning opens a user-requested DMI observation layer for the current map view and last hour, with 10/30/60-minute age filters and a manual Refresh view button. DMI documents coverage for Denmark and surrounding areas; some Polish points were verified, but coverage across Poland is not assured. A blank map is never an all-clear. The app does not poll for lightning in the background or retain strikes after restart. These observations are not lightning warnings or a safety alert service.
+
 Network failures retain previously saved radar metadata, forecasts and warnings with qualified stale/offline states. Native map tiles are cached only as the providers allow; offline coverage is incomplete, and there is no region download. Backgrounding pauses network polling and playback. The app requires internet for fresh weather, search and uncached maps. All providers are best-effort public services with no uptime promise. Provider policies and verification are in [PROVIDERS.md](PROVIDERS.md); milestone/device test coverage is in [MILESTONES.md](MILESTONES.md).
 
-Run single-viewport live checks as needed: `npm.cmd run smoke:map`, `npm.cmd run smoke:radar`, `npm.cmd run smoke:forecast`, and `npm.cmd run smoke:warnings`. They write ignored evidence under `artifacts/` and do not bulk-download tiles. No API secrets are bundled. The map and weather providers receive normal request data, including viewed map areas or forecast coordinates; see provider notes for details.
+Run single-viewport live checks as needed: `npm.cmd run smoke:map`, `npm.cmd run smoke:radar`, `npm.cmd run smoke:forecast`, `npm.cmd run smoke:warnings`, and `npm.cmd run smoke:lightning`. They do not bulk-download tiles or weather data. No API secrets are bundled. The map and weather providers receive normal request data, including viewed map areas or forecast coordinates; see provider notes for details.
 
 On a physical phone, check that GPS denial leaves manual search usable; pan
 and zoom during radar playback; turn data off and back on; background/resume;
@@ -60,3 +62,6 @@ switch themes across a local-time boundary; and inspect the sheets with large
 font and TalkBack. A current IMGW warning check needs a valid provider response:
 the documented endpoint returned HTTP 404 on 2026-09-23, which this app reports
 as unconfirmed rather than "no warnings".
+For lightning, enable the layer, refresh after moving the map, inspect the age
+filter and source credit, then check offline and background/resume states. Confirm
+the layer does not imply complete Polish detection coverage.

@@ -36,7 +36,8 @@
     "smoke:map": "node scripts/smoke-map.mjs",
     "smoke:radar": "node scripts/smoke-radar.mjs",
     "smoke:forecast": "node scripts/smoke-forecast.mjs",
-    "smoke:warnings": "node scripts/smoke-warnings.mjs"
+    "smoke:warnings": "node scripts/smoke-warnings.mjs",
+    "smoke:lightning": "node scripts/smoke-lightning.mjs"
   },
   "private": true
 }

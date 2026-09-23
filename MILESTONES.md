@@ -1,6 +1,6 @@
 # Milestones
 
-M1 is complete, approved and committed as `b25a8ff`. M2 is committed as `b9d9dc1`; M3 as `281b553`; M4 as `f654254`; M5 as `8a01155`, all approved. M6's emulator-verified release was approved; physical-device checks remain open. Pause after each milestone and commit only after user approval.
+M1 is complete, approved and committed as `b25a8ff`. M2 is committed as `b9d9dc1`; M3 as `281b553`; M4 as `f654254`; M5 as `8a01155`; M6 as `4024f8d`, all approved. M6 physical-device checks remain open. M7 lightning is implemented and awaiting review. Pause after each milestone and commit only after user approval.
 
 ## M1 — Android foundation and base map
 - [x] Scaffold compatible Expo/React Native/TypeScript and MapLibre development build.
@@ -47,10 +47,10 @@ Exit: automatic switching works without background permissions; radar stays read
 - [x] Write concise README with exact setup/build commands and known limitations.
 Exit: the owner can install and use the app independently of the development computer.
 
-## Deferred — lightning
-- [ ] Confirm permitted live data access, coverage, cost, latency and retention.
-- [ ] Then implement point layer, age legend, time filtering and honest update status.
-This is not a gate for the radar release. Do not show synthetic strikes as real observations.
+## M7 — lightning observations (formerly deferred)
+- [x] Confirm permitted data access, geographic limitations, cost, latency and retention limits.
+- [x] Implement observed point layer, age legend, time filtering and honest update status.
+This was not a gate for the radar release. No synthetic strikes are shown as real observations. DMI does not promise complete Polish coverage or an update SLA; the app makes no lightning safety claim.
 
 ## Progress log
 For each completed milestone record: changes, commands/checks actually run, device/emulator used, unresolved issues. Keep unchecked any requirement that has not been verified.
@@ -388,3 +388,41 @@ For each completed milestone record: changes, commands/checks actually run, devi
   feed remain unverified there. The first checklist item remains open.
   The user approved this release milestone for commit on 2026-09-23; physical
   device checks remain open and are not claimed as passed.
+
+### M7 — 2026-09-23 — implemented, awaiting approval
+
+- User approved and M6 was committed as `4024f8d`. Selected DMI's public
+  GeoJSON lightning observations after checking official API, no-key access,
+  CC BY 4.0 terms and mobile fair-use guidance. Direct live queries returned
+  Polish points near Gdynia, Warsaw and southern Poland. DMI officially only
+  describes Denmark and surrounding coverage; the app explicitly warns that
+  Polish detection is incomplete/uncertain and never labels an empty result an
+  all-clear. Source timeliness and retention are not guaranteed. The app keeps
+  observations only in memory for the current session, for up to one hour.
+- Added a bounded visible-viewport request on enable/manual refresh, capped at
+  5° by 5° and 500 points. No continuous/background polling or bulk download.
+  Foreground requests cancel when backgrounded, hidden or offline. Native
+  MapLibre circles show observed points above rain, with 10/30/60-minute age
+  filtering. The sheet distinguishes occurrence age, fetch time, stale/failed/
+  offline updates, moved viewport, empty response and limit reached, and links
+  DMI terms and CC BY 4.0. Map credits add DMI only when the layer is enabled.
+- DMI currently emits a `next` link even for a 12-point page whose successor
+  is empty. Partial status therefore uses the 500-point response limit, not
+  the link. Parser and boundary tests cover invalid/future points, deduplication,
+  time bands, viewport limits and the provider pagination quirk.
+- Passed `npm.cmd run typecheck`, `npm.cmd run lint`, `npm.cmd test` (26 tests),
+  `npm.cmd run smoke:lightning` (actual Gdynia-area points) and
+  `npx.cmd expo-doctor` (21/21). Signed standalone Android release was built
+  and installed on Pixel_10, Android 16/API 36, without Metro. A live DMI
+  storm near 60.9385°N, 8.6288°E returned 11 points in the selected age
+  range, rendered as actual circles over RainViewer imagery. A valid empty
+  Gdynia-area response displayed an explicit non-all-clear. Offline mode
+  disabled refresh while retaining and labeling session observations. The
+  layer responded to viewport changes and requested manual refresh. The final
+  release APK was installed again without Metro and the same 11 points appeared
+  without a false partial-data badge. APK: `artifacts/weather-radar-release.apk`,
+  116,691,629 bytes, SHA-256
+  `86D3C943C038CD385D272E0D63FA5E99B2A2E342CEB5D75B446F01F30A784F95`.
+- M7 physical phone, TalkBack/large fonts, long-running memory and real
+  provider 429/500 recovery remain unverified. M6 physical checks also remain
+  open. Pause for M7 user review before committing.

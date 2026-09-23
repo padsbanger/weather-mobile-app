@@ -3,7 +3,7 @@ import { ActivityIndicator, Animated, Linking, Pressable, StyleSheet, Text, View
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNetInfo } from '@react-native-community/netinfo';
-import { Camera, LogManager, Map, type CameraRef } from '@maplibre/maplibre-react-native';
+import { Camera, LogManager, Map, type CameraRef, type MapRef } from '@maplibre/maplibre-react-native';
 import { basemap, darkBasemap, lightMapStyle } from '../../providers/basemap';
 import { CAMERA_KEY, DEFAULT_CAMERA, parseCamera, type SavedCamera } from '../../storage/camera';
 import { type ThemeColors } from '../../theme/tokens';
@@ -20,6 +20,10 @@ import { useWarnings } from '../warnings/useWarnings';
 import { WarningsSheet, severityColors } from '../warnings/WarningsSheet';
 import { areaLabel } from '../warnings/areas';
 import { warningPhase, warningsForArea, warningSummary } from '../../providers/imgw';
+import { LightningLayer } from '../lightning/LightningLayer';
+import { LightningSheet } from '../lightning/LightningSheet';
+import { useLightning } from '../lightning/useLightning';
+import { type Bounds } from '../../providers/dmiLightning';
 
 function Button({ label, children, onPress, disabled = false }: {
   label: string; children: React.ReactNode; onPress: () => void; disabled?: boolean;
@@ -44,9 +48,13 @@ export function MapScreen() {
   const offline = network.isConnected === false || network.isInternetReachable === false;
   const radar = useRadar(offline);
   const warnings = useWarnings(offline);
+  const lightning = useLightning(offline);
+  const [lightningOpen, setLightningOpen] = useState(false);
+  const [lightningMaxAge, setLightningMaxAge] = useState<10 | 30 | 60>(60);
   const [warningsOpen, setWarningsOpen] = useState(false);
   const radarTileError = radar.onTileError;
   const camera = useRef<CameraRef>(null);
+  const map = useRef<MapRef>(null);
   const current = useRef<SavedCamera>(DEFAULT_CAMERA);
   const writes = useRef(Promise.resolve());
   const [initial, setInitial] = useState<SavedCamera | null>(null);
@@ -82,8 +90,8 @@ export function MapScreen() {
     }).catch(() => { if (active) { setStorageError(true); setInitial(DEFAULT_CAMERA); } });
     LogManager.onLog(({ level, message }) => {
       if ((level === 'error' || level === 'warn') && /tile|http|source/i.test(message) && !/cancel/i.test(message)) {
-        if (!/source radar-|rainviewer|radar tile budget/i.test(message)) setMapError(true);
-        if (!/source basemap|openstreetmap/i.test(message)) radarTileError(message);
+        if (!/source radar-|rainviewer|radar tile budget|dmi-lightning/i.test(message)) setMapError(true);
+        if (!/source basemap|openstreetmap|dmi-lightning/i.test(message)) radarTileError(message);
         if (__DEV__) console.info(`Map resource unavailable: ${message}`);
         return true; // The app reports recoverable tile failures; avoid a blocking dev LogBox.
       }
@@ -115,11 +123,14 @@ export function MapScreen() {
   const placeName = namedPlace && Math.abs(center[0] - namedPlace.center[0]) < 0.001 && Math.abs(center[1] - namedPlace.center[1]) < 0.001
     ? namedPlace.name : nearGdynia ? 'Gdynia' : `${center[1].toFixed(3)}°, ${center[0].toFixed(3)}°`;
   function openSheet() { if (radar.playing) radar.togglePlay(); }
+  async function currentBounds(): Promise<Bounds | null> {
+    try { return await map.current?.getBounds() ?? null; } catch { return null; }
+  }
   const activeWarnings = warningsForArea(warnings.data, warnings.area).filter(w => warningPhase(w, warnings.now) === 'active');
   const highestSeverity = activeWarnings.reduce<1 | 2 | 3>((level, w) => w.severity > level ? w.severity : level, 1);
   return <View style={[styles.screen, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
     <View style={styles.mapArea}>
-      {initial && <Animated.View style={[StyleSheet.absoluteFill, { opacity: mapOpacity }]}><Map mapStyle={resolved === 'dark' ? darkBasemap.style : lightMapStyle} style={StyleSheet.absoluteFill} attribution={false}
+      {initial && <Animated.View style={[StyleSheet.absoluteFill, { opacity: mapOpacity }]}><Map ref={map} mapStyle={resolved === 'dark' ? darkBasemap.style : lightMapStyle} style={StyleSheet.absoluteFill} attribution={false}
         logo={false} compass={false} touchRotate={false} touchPitch={false}
         onDidFinishLoadingMap={() => { setLoaded(true); finishThemeTransition(); }} onDidFailLoadingMap={() => { setMapError(true); finishThemeTransition(); }}
         onDidFinishRenderingMapFully={() => { setLoaded(true); setMapError(false); finishThemeTransition(); }}
@@ -127,11 +138,13 @@ export function MapScreen() {
         onRegionWillChange={({ nativeEvent }) => { if (nativeEvent.userInteraction || nativeEvent.animated) radar.cameraStart(); }}
         onRegionDidChange={({ nativeEvent }) => {
           radar.cameraEnd();
+          lightning.setViewBounds(nativeEvent.bounds);
           const value = parseCamera({ center: nativeEvent.center, zoom: nativeEvent.zoom });
           if (value) { setCenter(value.center); persist(value); }
         }}>
         <Camera ref={camera} initialViewState={initial} minZoom={2} maxZoom={18} />
         <RadarLayers displayed={radar.displayed} staged={radar.staged} enabled={radar.enabled} opacity={radar.opacity} />
+        <LightningLayer lightning={lightning} maxAge={lightningMaxAge} />
       </Map></Animated.View>}
       <View style={styles.top}>
         <Pressable accessibilityRole="button" accessibilityLabel="Choose a location on the map" style={styles.location}
@@ -147,7 +160,9 @@ export function MapScreen() {
         <Pressable accessibilityRole="button" accessibilityLabel="Open theme settings" style={styles.rainPill}
           onPress={() => setThemeOpen(true)}><Text style={styles.rainText}>Theme</Text></Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel="Open weather warnings" style={styles.rainPill}
-          onPress={() => { openSheet(); setWarningsOpen(true); }}><Text style={styles.rainText}>Warnings</Text></Pressable></View>
+          onPress={() => { openSheet(); setWarningsOpen(true); }}><Text style={styles.rainText}>Warnings</Text></Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel="Open lightning observations" style={styles.rainPill}
+          onPress={() => { openSheet(); setLightningOpen(true); }}><Text style={styles.rainText}>Lightning</Text></Pressable></View>
         {warnings.area && <Pressable accessibilityRole="button" accessibilityLabel={`Warnings for ${areaLabel(warnings.area)}. ${warningSummary(warnings.data, warnings.area, warnings.now, warnings.fetchedAt, offline, warnings.error)}`}
           onPress={() => { openSheet(); setWarningsOpen(true); }} style={[styles.warningBanner, activeWarnings.length > 0 && { backgroundColor: severityColors(highestSeverity, colors).backgroundColor }]}>
           <Text numberOfLines={1} style={styles.credit}>IMGW-PIB · {areaLabel(warnings.area)} · manual area</Text>
@@ -168,6 +183,8 @@ export function MapScreen() {
           onPress={() => { void Linking.openURL(resolved === 'dark' ? darkBasemap.attributionUrl : basemap.attributionUrl); }}><Text style={styles.credit}>{resolved === 'dark' ? darkBasemap.attribution : basemap.attribution}</Text></Pressable>
         <Pressable accessibilityRole="link" accessibilityLabel="Weather data by RainViewer" style={styles.attribution}
           onPress={() => { void Linking.openURL('https://www.rainviewer.com/'); }}><Text style={styles.credit}>Radar by RainViewer</Text></Pressable>
+        {lightning.enabled && <Pressable accessibilityRole="link" accessibilityLabel="Lightning data by DMI, Creative Commons Attribution 4.0" style={styles.attribution}
+          onPress={() => { void Linking.openURL('https://www.dmi.dk/friedata/dokumentation/terms-of-use'); }}><Text style={styles.credit}>Lightning: DMI · CC BY 4.0</Text></Pressable>}
       </View>
     </View>
     <View>
@@ -180,6 +197,7 @@ export function MapScreen() {
     {forecastPlace && <ForecastSheet place={forecastPlace} offline={offline} onClose={() => setForecastPlace(null)} />}
     {themeOpen && <ThemeSheet onClose={() => setThemeOpen(false)} />}
     {warningsOpen && <WarningsSheet state={warnings} onClose={() => setWarningsOpen(false)} />}
+    {lightningOpen && <LightningSheet lightning={lightning} maxAge={lightningMaxAge} setMaxAge={setLightningMaxAge} currentBounds={currentBounds} onClose={() => setLightningOpen(false)} />}
   </View>;
 }
 
