@@ -7,7 +7,9 @@ import { type ThemeMode } from './schedule';
 
 const hours = Array.from({ length: 24 }, (_, hour) => hour);
 function hourLabel(hour: number) { return `${String(hour).padStart(2, '0')}:00`; }
-export function ThemeSheet({ onClose }: { onClose: () => void }) {
+export function ThemeSheet({ currentLocation, onChooseLocation, onClose }: {
+  currentLocation: string; onChooseLocation: () => void; onClose: () => void;
+}) {
   const { colors, preference, resolved, setMode, setHours, reducedMotion } = useTheme();
   const s = useMemo(() => makeStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
@@ -19,10 +21,16 @@ export function ThemeSheet({ onClose }: { onClose: () => void }) {
   return <Modal transparent animationType={reducedMotion ? 'none' : 'fade'} onRequestClose={onClose}>
     <View style={[s.backdrop, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <View style={s.panel}>
-        <View style={s.header}><Text style={s.heading}>Theme</Text>
-          <Pressable accessibilityRole="button" accessibilityLabel="Close theme settings" onPress={onClose} style={s.close}><Text style={s.link}>Close</Text></Pressable>
+        <View style={s.header}><Text style={s.heading}>Settings</Text>
+          <Pressable accessibilityRole="button" accessibilityLabel="Close settings" onPress={onClose} style={s.close}><Text style={s.link}>Close</Text></Pressable>
         </View>
         <ScrollView contentContainerStyle={s.content}>
+          <Text style={s.title}>Map location</Text>
+          <Text style={s.body}>Current map center: {currentLocation}</Text>
+          <Pressable accessibilityRole="button" accessibilityLabel="Choose map location" onPress={onChooseLocation} style={s.locationAction}>
+            <Text style={s.link}>Search or choose a location</Text>
+          </Pressable>
+          <Text style={s.title}>Appearance</Text>
           <Text style={s.body}>Current appearance: {resolved}. Automatic mode follows the device local time.</Text>
           <View style={s.modeRow}>{modes.map(({ mode, label }) => <Pressable key={mode} accessibilityRole="radio"
             accessibilityLabel={`${label} theme`} accessibilityState={{ checked: preference.mode === mode }}
@@ -43,7 +51,7 @@ export function ThemeSheet({ onClose }: { onClose: () => void }) {
               accessibilityState={{ selected: preference.lightEnd === hour }} onPress={() => setHours(preference.lightStart, hour)}
               style={[s.hour, preference.lightEnd === hour && s.selected]}><Text style={[s.modeText, preference.lightEnd === hour && s.selectedText]}>{hourLabel(hour)}</Text></Pressable>)}
           </ScrollView>
-          <Text style={s.body}>The map uses OpenStreetMap in light mode and OpenFreeMap with OpenMapTiles in dark mode. Radar colors stay the same.</Text>
+          <Text style={s.body}>Both map themes use OpenFreeMap with OpenMapTiles and OpenStreetMap data. Radar colors stay the same.</Text>
         </ScrollView>
       </View>
     </View>
@@ -58,6 +66,7 @@ function makeStyles(c: ThemeColors) { return StyleSheet.create({
   title: { color: c.text, fontSize: 18, fontWeight: '600' }, label: { color: c.text, fontSize: 15, fontWeight: '600' },
   modeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   mode: { minHeight: 48, borderRadius: 24, paddingHorizontal: 16, justifyContent: 'center', backgroundColor: c.background, borderWidth: 1, borderColor: c.border },
+  locationAction: { minHeight: 48, alignSelf: 'flex-start', justifyContent: 'center', paddingHorizontal: 14, borderRadius: 16, backgroundColor: c.background, borderWidth: 1, borderColor: c.border },
   hour: { minHeight: 48, minWidth: 64, borderRadius: 24, paddingHorizontal: 12, justifyContent: 'center', alignItems: 'center', backgroundColor: c.background, borderWidth: 1, borderColor: c.border },
   hours: { gap: 8, paddingVertical: 2 }, modeText: { color: c.text, fontSize: 15 },
   selected: { backgroundColor: c.accent, borderColor: c.accent }, selectedText: { color: c.onAccent, fontWeight: '700' },

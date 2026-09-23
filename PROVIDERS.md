@@ -1,5 +1,43 @@
 # Providers
 
+The 2026-09-23 UI follow-up removed map and radar credits from the primary
+screen at the user's request. OpenFreeMap and RainViewer still require visible
+attribution under their current terms. The existing provider arrangement
+therefore needs an attribution solution before distribution; earlier notes
+below describe the credited implementation and provider checks.
+
+## Light base map (UI tuning, 2026-09-23): OpenFreeMap Positron
+
+The light map now uses `https://tiles.openfreemap.org/styles/positron` through
+MapLibre Native. It replaces the OSM standard raster below, whose labels were
+baked into the image. The vector style lets the radar sit above land, roads and
+water while map labels remain above it. The precipitation palette is unchanged.
+The dark map continues to use OpenFreeMap's dark style. Both styles require
+`© OpenMapTiles · © OpenStreetMap contributors · OpenFreeMap` credit, currently
+absent from the map UI following the later user request above.
+
+The [OpenFreeMap homepage](https://openfreemap.org/), [mobile integration
+guide](https://openfreemap.org/quick_start/) and [terms](https://openfreemap.org/tos/)
+were rechecked on 2026-09-23. Public use requires no key or account; attribution
+is required. Service is best effort. The app loads only visible map resources
+through the native cache, with no offline pack or bulk harvesting. The service
+receives the viewed area and IP address. At the check, the Positron style had
+55 layers, including `waterway_line_label` and `label_city`. Its tile metadata
+advertised OpenStreetMap attribution and source zoom 14. `npm run smoke:map`
+fetched the style, one actual Gdynia vector tile (140,127 bytes), glyph PBF
+(76,580 bytes), sprite index (264 entries) and sprite PNG (49,454 bytes).
+The dated tile path is read from the current source metadata, not bundled.
+The style JSON snapshots are bundled under `src/providers/styles/` with a
+transparent `radar-label-anchor` added just before the first symbol layer in
+both themes. This fixed ID avoids a MapLibre Android crash when `beforeId`
+changes during a theme reload. External tiles, glyphs and sprites still use
+the provider URLs in each style. Recheck the snapshots against upstream style
+updates when changing the map provider; `smoke:map` checks the light style's
+source and anchor against live resources.
+
+The original M1 provider record follows for history; it is no longer the active
+light style.
+
 ## Base map (M1): OpenStreetMap standard raster
 
 Selected for this small, personal-use Android application. No account, token or
@@ -51,12 +89,12 @@ functionality or guarantee cache coverage.
 
 ## Dark base map (M5): OpenFreeMap
 
-The dark mode uses `https://tiles.openfreemap.org/styles/dark`, a hosted
-MapLibre style with vector tiles. It is separate from the OSM standard raster
-service used in light mode and never recolors the RainViewer overlay. The
-style's OpenMapTiles source declares OpenStreetMap data attribution. The map
-visibly links `© OpenMapTiles · © OpenStreetMap contributors · OpenFreeMap`
-to OpenFreeMap.
+The dark mode uses a bundled snapshot of OpenFreeMap's
+`https://tiles.openfreemap.org/styles/dark` MapLibre vector style. Both light
+and dark modes use OpenFreeMap vector resources and never recolor the
+RainViewer overlay. The style's OpenMapTiles source declares OpenStreetMap data
+attribution. The earlier implementation linked the required credit on the map;
+the current UI has removed it as noted above.
 OpenFreeMap does not require a key, account, or payment. The public service is
 best effort, without an uptime guarantee. Its terms prohibit automated
 harvesting; the app loads ordinary viewport tiles only, uses the native cache,
@@ -78,8 +116,9 @@ Checked 2026-09-22 against the [API terms](https://www.rainviewer.com/api.html),
 [Weather Maps schema](https://www.rainviewer.com/api/weather-maps-api.html),
 [transition summary](https://www.rainviewer.com/api/transition-faq.html) and
 [color table](https://www.rainviewer.com/api/color-schemes.html).
-Personal use is permitted without an account/token. Visible linked RainViewer
-credit is included. Service availability and regional coverage are not guaranteed.
+Personal use is permitted without an account/token. RainViewer requires visible
+linked credit, which the current map UI has removed as noted above. Service
+availability and regional coverage are not guaranteed.
 
 The transition summary is stricter than the general FAQ: use past history only,
 Universal Blue (scheme 2), source zoom at most 7 and a 100 requests/IP/minute

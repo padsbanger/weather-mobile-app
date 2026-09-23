@@ -1,5 +1,66 @@
 # Milestones
 
+## UI tuning first pass — 2026-09-23 — approved
+
+- User follow-up removed the coordinate/search bar from the map. Settings now
+  displays the current map center and opens the existing manual location picker.
+  Layers, Forecast and Settings share the top row; camera persistence, manual
+  search/favorites and the on-demand GPS button are unchanged. A signed release
+  launched without Metro on Pixel_10 Android 16/API 36. The Settings action
+  opened the picker, Android Back returned to the map, and the 360×640 dp
+  viewport kept all top controls visible. Screenshots:
+  `artifacts/ui-location-in-settings.png`, `artifacts/ui-settings-location.png`,
+  `artifacts/ui-settings-location-picker.png`, and
+  `artifacts/ui-location-in-settings-small.png`.
+
+- User follow-up removed all map credit labels and links. Locate and zoom
+  controls now sit at the lower map edge. Source information inside warning
+  and lightning details remains. OpenFreeMap and RainViewer currently require
+  visible attribution, so the resulting map/radar presentation does not meet
+  their published attribution requirements; resolve that before distribution.
+  The signed release built and launched on Pixel_10 Android 16/API 36 without
+  Metro; `artifacts/ui-no-credits.png` shows the lower map edge without labels.
+  Type checking, lint and 26 tests passed.
+
+- The earlier follow-up replaced the full-width attribution strip with small
+  linked labels; those labels have now been removed. A signed
+  release build ran without Metro on Pixel_10 Android 16/API 36. Screenshots:
+  `artifacts/ui-tuning-no-strip-final.png` and
+  `artifacts/ui-tuning-no-strip-small.png` (360×640 dp).
+
+- Replaced the active light raster map with a bundled OpenFreeMap Positron
+  vector style. Both theme styles include a fixed transparent radar insertion
+  anchor before labels. Rain remains above geography and below vector labels;
+  the staging layer remains below the map background. A first emulator theme
+  switch crashed because the visible layer's `beforeId` changed during style
+  reload. The fixed anchor removed that change; switching to dark then kept
+  the process alive and preserved the camera and displayed frame.
+- Consolidated the top UI into Layers, Forecast and Settings, with a
+  warning county/status badge that opens selection even when no county is set.
+  Layers contains Rain and Lightning toggles and lightning details. The radar
+  panel now exposes Latest, an accessible expansion control, and a compact
+  frame/legend/coverage layout. Grouped zoom controls fit above the panel at
+  normal and 1.3× Android font scale.
+- Passed type checking, lint, 26 tests and `smoke:map`. The provider check fetched
+  an actual Positron vector tile, glyphs, sprite index and sprite image; the
+  signed release built and ran on Pixel_10 Android 16/API 36 without Metro.
+  Captured comparable light and dark final screenshots at
+  `artifacts/ui-tuning-light-final.png` and
+  `artifacts/ui-tuning-dark-final.png`, plus 1.3× font evidence at
+  `artifacts/ui-tuning-large.png`. Playback and a short pan/zoom remained
+  responsive in dark mode (`artifacts/ui-tuning-play-pan.png`). With Wi-Fi and
+  mobile data disabled, the cached map and displayed radar frame remained
+  visible with separate offline labels (`artifacts/ui-tuning-offline.png`);
+  connectivity was restored afterward. The previous layout is visible in
+  `artifacts/m7-map.png` but uses a wider camera view.
+- The 360×640 dp emulator viewport also kept controls and the panel
+  visible, including its offline notice
+  (`artifacts/ui-tuning-small-final.png`,
+  `artifacts/ui-tuning-small-offline.png`). Still to verify: actual rain over
+  city labels, prolonged playback while panning/zooming, sustained offline
+  recovery, full TalkBack navigation and a physical phone. M6 physical-device checks and M7 approval
+  remain open. The user approved this tuning for commit on 2026-09-23.
+
 M1 is complete, approved and committed as `b25a8ff`. M2 is committed as `b9d9dc1`; M3 as `281b553`; M4 as `f654254`; M5 as `8a01155`; M6 as `4024f8d`, all approved. M6 physical-device checks remain open. M7 lightning is implemented and awaiting review. Pause after each milestone and commit only after user approval.
 
 ## M1 — Android foundation and base map
