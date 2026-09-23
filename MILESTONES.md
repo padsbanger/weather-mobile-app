@@ -1,6 +1,6 @@
 # Milestones
 
-M1 is complete, approved and committed as `b25a8ff`. M2 is committed as `b9d9dc1`; M3 as `281b553`; M4 as `f654254`, all approved. M5 is implemented and awaits user review; M6 remains pending. Pause after each milestone and commit only after user approval.
+M1 is complete, approved and committed as `b25a8ff`. M2 is committed as `b9d9dc1`; M3 as `281b553`; M4 as `f654254`; M5 as `8a01155`, all approved. M6's emulator-verified release was approved; physical-device checks remain open. Pause after each milestone and commit only after user approval.
 
 ## M1 — Android foundation and base map
 - [x] Scaffold compatible Expo/React Native/TypeScript and MapLibre development build.
@@ -42,9 +42,9 @@ Exit: automatic switching works without background permissions; radar stays read
 
 ## M6 — Personal-use release
 - [ ] Physical Android checks, network recovery, large fonts, lifecycle and memory review.
-- [ ] Validate attributions, provider usage and absence of bundled secrets.
-- [ ] Build an installable release APK that runs without Metro; document signing backup.
-- [ ] Write concise README with exact setup/build commands and known limitations.
+- [x] Validate attributions, provider usage and absence of bundled secrets.
+- [x] Build an installable release APK that runs without Metro; document signing backup.
+- [x] Write concise README with exact setup/build commands and known limitations.
 Exit: the owner can install and use the app independently of the development computer.
 
 ## Deferred — lightning
@@ -341,3 +341,50 @@ For each completed milestone record: changes, commands/checks actually run, devi
   style reload, and long-running playback/memory. The debug APK still needs
   Metro; standalone release verification is M6. M5 is uncommitted pending user
   approval.
+
+### M6 — 2026-09-23 — release built; physical checks pending
+
+- User approved M5; committed it as `8a01155`. Added an idempotent Expo config
+  plugin for local Android release signing and `npm.cmd run release:local`.
+  The script generates or reuses a 3072-bit RSA signing key under
+  `%LOCALAPPDATA%\WeatherRadar\signing`, outside the repository. It refuses
+  to replace an incomplete key/credentials pair. The ignored generated Android
+  project and `artifacts/weather-radar-release.apk` contain the build output.
+  `README.md` gives exact install/build commands and private backup instructions.
+- `app:assembleRelease` bundled JavaScript and produced an installable APK for
+  arm64-v8a, armeabi-v7a, x86 and x86_64. `apksigner verify` confirmed v2
+  signing by `CN=Weather Radar Personal`; `aapt dump badging` confirmed package
+  `pl.konta.weatherradar`, version 0.1.0. No background-location permission.
+  Legacy external-storage permissions were blocked before the final build.
+- Installed the signed release on Pixel_10 Android 16/API 36 after uninstalling
+  the differently signed debug client. Metro was stopped. The app launched
+  directly with native tiles, radar history and visible credits; no developer
+  server was used. Fresh launch, warning error state, 1.3× fonts, offline cached
+  map/radar, network recovery, foreground/background resume, and pan/zoom were
+  exercised. Playback paused on background. The camera persisted. Screenshots
+  under ignored `artifacts/m6-*.png` record these checks. A short memory sample
+  showed TOTAL PSS 122 MB before pan/zoom, 147 MB after loading more map tiles,
+  and 112 MB after later idle/background; this is not a long soak test.
+- The final APK was reinstalled with `adb install -r` under the same signing
+  identity and launched with Metro absent; the dark vector map and full
+  `© OpenStreetMap contributors` credit rendered. Final APK size: 116,674,717
+  bytes. SHA-256: `99A0258A60A56FF93A28588965F2A2D81C10EEE58F6BFDA4233A8F51D65ED8DF`.
+  Its manifest has coarse/fine location and network permissions, without
+  background location or legacy external-storage permissions.
+- Passed `npm.cmd run typecheck`, `npm.cmd run lint`, `npm.cmd test` (22 tests),
+  and `npx.cmd expo-doctor` (21/21). Live smoke checks passed for actual OSM
+  raster and RainViewer metadata/tile bytes and Open-Meteo forecast. The
+  official IMGW warning endpoint returned HTTP 404 with an empty body during
+  this check, despite still appearing in official API documentation. Its
+  meaning is undocumented, so the app correctly shows warning status as
+  unconfirmed rather than treating the response as no active warnings.
+- Attribution was inspected in the rendered light/dark map and source sheets;
+  current provider terms and no-bulk-download behavior are in `PROVIDERS.md`.
+  Source/configuration and tracked-file scans found no bundled private token,
+  keystore or credentials. The signing key/password remain in the local profile.
+- No physical Android phone is connected. Physical install, GPS denial,
+  TalkBack, large fonts, poor-network playback, actual timezone/DST switching,
+  long-running memory/battery behavior, and recovery from a future valid IMGW
+  feed remain unverified there. The first checklist item remains open.
+  The user approved this release milestone for commit on 2026-09-23; physical
+  device checks remain open and are not claimed as passed.

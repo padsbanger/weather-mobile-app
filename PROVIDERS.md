@@ -55,7 +55,8 @@ The dark mode uses `https://tiles.openfreemap.org/styles/dark`, a hosted
 MapLibre style with vector tiles. It is separate from the OSM standard raster
 service used in light mode and never recolors the RainViewer overlay. The
 style's OpenMapTiles source declares OpenStreetMap data attribution. The map
-visibly links `© OpenMapTiles · OpenStreetMap · OpenFreeMap` to OpenFreeMap.
+visibly links `© OpenMapTiles · © OpenStreetMap contributors · OpenFreeMap`
+to OpenFreeMap.
 OpenFreeMap does not require a key, account, or payment. The public service is
 best effort, without an uptime guarantee. Its terms prohibit automated
 harvesting; the app loads ordinary viewport tiles only, uses the native cache,
@@ -222,6 +223,12 @@ warning, no rejected records or unknown county codes, and nonempty original text
 Normalized validity: 2026-09-21 16:00 UTC to 2026-09-22 22:00 UTC.
 Evidence: `artifacts/imgw-live.json`, `imgw-smoke.json`. An empty future response
 can pass the smoke check; malformed or partially invalid responses cannot.
+
+On 2026-09-23 the same documented endpoint returned HTTP 404 with an empty
+body. The [official API page](https://danepubliczne.imgw.pl/apiinfo) still
+lists it but does not define whether 404 means an empty warning feed or a
+service problem. The app treats it as a failed refresh and labels current
+warning status unconfirmed. It never converts that response to "no warnings".
 
 ### Administrative-area catalogue
 

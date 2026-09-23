@@ -14,6 +14,8 @@
       "package": "pl.konta.weatherradar",
       "blockedPermissions": [
         "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.RECORD_AUDIO",
         "android.permission.SYSTEM_ALERT_WINDOW"
       ],
@@ -27,6 +29,7 @@
       ]
     },
     "plugins": [
+      "./plugins/withLocalReleaseSigning",
       "@maplibre/maplibre-react-native",
       "expo-dev-client",
       [

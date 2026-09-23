@@ -10,7 +10,7 @@ export const basemap = {
 };
 export const darkBasemap = {
   style: 'https://tiles.openfreemap.org/styles/dark',
-  attribution: '© OpenMapTiles · OpenStreetMap · OpenFreeMap',
+  attribution: '© OpenMapTiles · © OpenStreetMap contributors · OpenFreeMap',
   attributionUrl: 'https://openfreemap.org/',
 };
 

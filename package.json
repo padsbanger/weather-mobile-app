@@ -28,6 +28,7 @@
     "start": "expo start --dev-client",
     "android": "expo run:android",
     "release": "npx --yes eas-cli@24.7.0 build --platform android --profile release",
+    "release:local": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-release.ps1",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "node --test tests/*.test.ts",
