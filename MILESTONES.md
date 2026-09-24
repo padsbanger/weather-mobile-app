@@ -1,5 +1,15 @@
 # Milestones
 
+## Launcher icon — 2026-09-24 — awaiting review
+
+- Installed the user's uploaded cloud, radar and rain PNG byte for byte as
+  `assets/icon.png`; the Android adaptive icon uses the same source. Removed
+  the unused generated icon concepts.
+- Expo configuration resolved, the signed release APK built and installed, and
+  the Android 16/API 36 emulator app drawer showed the icon with its cloud,
+  radar rings and rain strokes visible. The APK launched without Metro.
+  Captured `artifacts/icon-drawer.png`. No physical device was available.
+
 ## Map camera controls — 2026-09-24 — awaiting review
 
 - Restored 48 dp zoom in, zoom out and GPS recenter buttons on the map above

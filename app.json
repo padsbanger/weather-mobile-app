@@ -20,8 +20,8 @@
         "android.permission.SYSTEM_ALERT_WINDOW"
       ],
       "adaptiveIcon": {
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundColor": "#F5F7FA"
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#027FF9"
       },
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
