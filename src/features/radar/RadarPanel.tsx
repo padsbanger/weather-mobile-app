@@ -34,7 +34,8 @@ export function RadarPanel({ radar, activeAction, warningActive, warningColor, w
   const index = selected ? frames.findIndex(frame => frameKey(frame) === frameKey(selected)) : -1;
   const newestStale = newest ? isStale(newest.time, radar.now) : displayed ? isStale(displayed.time, radar.now) : false;
   const coolingDown = radar.retryAt > radar.now;
-  const playbackDisabled = !radar.enabled || radar.offline || coolingDown || frames.length < 2;
+  const playbackDisabled = !radar.enabled || radar.offline || coolingDown || frames.length < 2 ||
+    (radar.preloadLimited && !radar.allPrepared && !radar.playing);
   const hasIssue = !!(radar.offline || radar.metadataError || newestStale || radar.tileError || radar.playbackError || coolingDown ||
     (radar.data !== null && !frames.length));
   const status = !radar.enabled ? 'Hidden' : radar.offline ? 'Offline' : newestStale ? 'Outdated' : displayed && isStale(displayed.time, radar.now) ? 'Historical' : newest ? 'Recent' : 'Loading';
@@ -44,11 +45,12 @@ export function RadarPanel({ radar, activeAction, warningActive, warningColor, w
     newestStale && 'Outdated radar',
     radar.tileError && 'Some tiles unavailable',
     radar.playbackError && 'Frame unavailable',
-    coolingDown && 'Tile limit reached',
+    coolingDown && 'Radar retry pending',
     radar.data !== null && !frames.length && 'No radar history',
     !!radar.data?.rejected && 'Partial history',
     !radar.displayed && radar.loading && 'Loading radar',
     radar.displayed && radar.viewportLoading && 'Loading map tiles',
+    radar.preparing && (radar.preloadLimited ? 'Zoom in to prepare history' : `Preparing history ${radar.preparedCount}/${frames.length}`),
     'Coverage unverified',
   ].filter(Boolean).join(' · ');
   const actions = [
@@ -91,7 +93,7 @@ export function RadarPanel({ radar, activeAction, warningActive, warningColor, w
       <Text style={styles.detailNote}>Blank areas may mean missing coverage or dry weather. Coverage is not guaranteed.</Text>
       <Text style={styles.detailText}>Rain radar · {status}</Text>
       <Text style={styles.detailText}>{displayed ? `Displayed ${formatFrameTime(displayed.time)} · ${Math.max(0, Math.floor((radar.now - displayed.time) / 60000))} min ago` : 'No radar frame loaded'}</Text>
-      {radar.staged && !radar.staged.ready && <ActivityIndicator accessibilityLabel={`Loading ${formatFrameTime(radar.staged.frame.time)}`} size="small" color={colors.accent} />}
+      {radar.wanted && radar.staged && !radar.staged.ready && <ActivityIndicator accessibilityLabel={`Loading ${formatFrameTime(radar.staged.frame.time)}`} size="small" color={colors.accent} />}
       <Pressable accessibilityRole="button" accessibilityLabel="Show latest radar frame" accessibilityState={{ disabled: !newest || coolingDown || !radar.enabled }}
         disabled={!newest || coolingDown || !radar.enabled} onPress={() => { if (newest) radar.select(newest); }} style={styles.latest}>
         <Text style={styles.link}>Show latest frame</Text>

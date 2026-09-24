@@ -1,5 +1,33 @@
 # Milestones
 
+## Map camera controls — 2026-09-24 — awaiting review
+
+- Restored 48 dp zoom in, zoom out and GPS recenter buttons on the map above
+  the playback dock. Recenter uses the existing foreground permission and
+  one-fix location flow. Settings zoom actions use the same camera commands.
+- Type checking, lint, all 29 tests and the signed release build passed. On an
+  Android 16/API 36 emulator, zoom in and zoom out changed the map scale and
+  recenter moved the map to the emulator GPS fix in Gdynia. At 320 dp width,
+  the controls remained above the dock and clear of the navigation bar.
+  Captured `artifacts/map-controls.png`, `artifacts/map-recenter.png` and
+  `artifacts/map-controls-narrow.png`. No physical device was available.
+
+## Radar history preparation — 2026-09-24 — awaiting review
+
+- Prepare all returned RainViewer past frames for the current viewport before
+  playback, retaining ready native sources for instant frame changes. Camera
+  or theme changes invalidate the prepared set. A 64-tile rolling-minute
+  estimate paces requests beneath the native 80-request guard, and the dock
+  reports preparation progress instead of a spinner for each playback frame.
+  Tile failures retry after a short delay; provider-limit failures wait a
+  minute.
+- Type checking, lint, 29 tests and a live RainViewer metadata plus actual
+  tile smoke check passed. A release APK launched without Metro on an Android
+  16/API 36 emulator. Playback advanced through prepared frames at Gdynia
+  and Warsaw without a per-frame spinner. Captured
+  `artifacts/prefetch-playing.png`. No physical Android device was available.
+  This work is uncommitted.
+
 ## Dark map and dock refinement — 2026-09-23 — awaiting review
 
 - Retinted the bundled dark OpenFreeMap vector layers: slate land, blue water,

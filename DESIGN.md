@@ -19,6 +19,14 @@ readable and touch targets remain generous. The user removed the map and radar
 credit strip, leaving the map visible immediately above the dock. Only one
 modal sheet is rendered at a time; Android Back closes it.
 
+Radar history prepares all available frames for the visible map viewport before
+playback starts. The collapsed dock shows preparation progress once, then
+playback changes between ready frames without a per-frame loading indicator.
+Changing the viewport invalidates that preparation and starts it again.
+Three compact controls above the dock provide zoom in, zoom out and GPS
+recenter. The recenter control uses the same on-demand location flow as the
+dock's Locate action; both respect foreground permission and safe areas.
+
 ## Unified control bar (2026-09-23)
 
 This earlier layout was superseded by the dark map and compact dock refinement

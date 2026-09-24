@@ -155,11 +155,18 @@ the provider's coverage mask is not yet integrated.
 - Persist usable metadata plus its original successful-fetch timestamp. Restore
   it on launch, then refresh; cached data does not become fresh merely by loading
   from disk. Native tiles retain provider caching headers and the ambient cache.
-- Stage one adjacent frame only during playback, underneath the opaque basemap.
-  This visible-to-the-renderer layer requests only current viewport weather
-  tiles, while the basemap covers it. Its display layer stays transparent until
-  native full-frame readiness. At most two weather sources exist: displayed and
-  staged. No second map, offline packs, region scans or basemap prefetch.
+- Prepare every returned past frame for the current viewport, one source at a
+  time, underneath the opaque basemap. Keep prepared sources mounted so playback
+  changes only layer opacity. A preparation counter remains visible until all
+  frames are ready; playback waits for that preparation to finish. Panning,
+  zooming or switching map theme clears prepared viewport frames and starts
+  again for the new view. No second map, offline packs, region scans or
+  basemap prefetch.
+- Estimate the source-zoom tile count from visible bounds and reserve twice
+  that count against a 64-tile rolling-minute preparation budget. This leaves
+  room for the displayed frame below the native 80-request guard. Extremely
+  wide views that cannot fit one frame in the preparation budget ask the user
+  to zoom in. Native tile caching can satisfy repeated requests locally.
 - The versioned Android patch tags fully-rendered events with installed staging
   layer IDs so late events cannot complete a newer scrub request. Source removal
   cancels obsolete tile work after scrubbing or camera changes. Camera movement

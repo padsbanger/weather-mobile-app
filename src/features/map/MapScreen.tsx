@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, AppState, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Animated, AppState, Pressable, StyleSheet, Text, View } from 'react-native';
+import Ionicons from '@react-native-vector-icons/ionicons/static';
 import * as ExpoLocation from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -44,6 +45,7 @@ export function MapScreen() {
   const network = useNetInfo();
   const offline = network.isConnected === false || network.isInternetReachable === false;
   const radar = useRadar(offline);
+  const invalidateRadarPrepared = radar.invalidatePrepared;
   const warnings = useWarnings(offline);
   const lightning = useLightning(offline);
   const [lightningMaxAge, setLightningMaxAge] = useState<10 | 30 | 60>(60);
@@ -51,6 +53,7 @@ export function MapScreen() {
   const camera = useRef<CameraRef>(null);
   const map = useRef<MapRef>(null);
   const current = useRef<SavedCamera>(DEFAULT_CAMERA);
+  const zoomTarget = useRef(DEFAULT_CAMERA.zoom);
   const writes = useRef(Promise.resolve());
   const [initial, setInitial] = useState<SavedCamera | null>(null);
   const [center, setCenter] = useState(DEFAULT_CAMERA.center);
@@ -70,6 +73,7 @@ export function MapScreen() {
     setNamedPlace(null);
     writes.current = writes.current.then(() => AsyncStorage.removeItem(SELECTED_PLACE_KEY))
       .catch(() => { setStorageError(true); });
+    zoomTarget.current = 11;
     camera.current?.easeTo({ center: coordinates, zoom: 11, duration: 500 });
     if (AppState.currentState !== 'active') return;
     void ExpoLocation.reverseGeocodeAsync({ latitude: coordinates[1], longitude: coordinates[0] })
@@ -84,12 +88,13 @@ export function MapScreen() {
   useEffect(() => {
     if (previousTheme.current === resolved) return;
     previousTheme.current = resolved;
+    invalidateRadarPrepared();
     transitioning.current = !reducedMotion;
     if (reducedMotion) { mapOpacity.setValue(1); return; }
     Animated.timing(mapOpacity, { toValue: 0.85, duration: 120, useNativeDriver: true }).start();
     const fallback = setTimeout(() => { transitioning.current = false; Animated.timing(mapOpacity, { toValue: 1, duration: 180, useNativeDriver: true }).start(); }, 1200);
     return () => clearTimeout(fallback);
-  }, [resolved, reducedMotion, mapOpacity]);
+  }, [resolved, reducedMotion, mapOpacity, invalidateRadarPrepared]);
   function finishThemeTransition() {
     if (!transitioning.current) return;
     transitioning.current = false;
@@ -108,6 +113,7 @@ export function MapScreen() {
       catch { setStorageError(true); }
       if (cameraResult.status === 'rejected' || placeResult.status === 'rejected') setStorageError(true);
       current.current = saved ?? DEFAULT_CAMERA;
+      zoomTarget.current = current.current.zoom;
       setInitial(current.current); setCenter(current.current.center);
       const atDefaultPlace = Math.abs(current.current.center[0] - DEFAULT_PLACE.center[0]) < 0.1 &&
         Math.abs(current.current.center[1] - DEFAULT_PLACE.center[1]) < 0.1;
@@ -146,8 +152,16 @@ export function MapScreen() {
   function selectPlace(place: Place) {
     geocodeGeneration.current++;
     savePlace(place); setCenter(place.center);
+    zoomTarget.current = 10;
     camera.current?.easeTo({ center: place.center, zoom: 10, duration: 400 });
     setSheet(null);
+  }
+
+  function zoomBy(step: number) {
+    const zoom = Math.max(2, Math.min(18, zoomTarget.current + step));
+    if (zoom === zoomTarget.current) return;
+    zoomTarget.current = zoom;
+    camera.current?.zoomTo(zoom, { duration: 250 });
   }
 
   const placeName = placeHeadline(namedPlace, center);
@@ -165,17 +179,17 @@ export function MapScreen() {
       {initial && <Animated.View style={[StyleSheet.absoluteFill, { opacity: mapOpacity }]}><Map ref={map} mapStyle={resolved === 'dark' ? darkBasemap.style : lightBasemap.style} style={StyleSheet.absoluteFill} attribution={false}
         logo={false} compass={false} touchRotate={false} touchPitch={false}
         onDidFinishLoadingMap={() => { setLoaded(true); finishThemeTransition(); }} onDidFailLoadingMap={() => { setMapError(true); finishThemeTransition(); }}
-        onDidFinishRenderingMapFully={() => { setLoaded(true); setMapError(false); finishThemeTransition(); }}
+        onDidFinishRenderingMapFully={() => { setLoaded(true); setMapError(false); finishThemeTransition(); radar.markDisplayReady(); }}
         onDidFinishRenderingFrameFully={({ nativeEvent }) => radar.onFullyRendered(nativeEvent)}
         onRegionWillChange={({ nativeEvent }) => { if (nativeEvent.userInteraction || nativeEvent.animated) radar.cameraStart(); }}
         onRegionDidChange={({ nativeEvent }) => {
-          radar.cameraEnd();
+          radar.cameraEnd(nativeEvent.bounds, nativeEvent.zoom);
           lightning.setViewBounds(nativeEvent.bounds);
           const value = parseCamera({ center: nativeEvent.center, zoom: nativeEvent.zoom });
-          if (value) { setCenter(value.center); persist(value); }
+          if (value) { zoomTarget.current = value.zoom; setCenter(value.center); persist(value); }
         }}>
         <Camera ref={camera} initialViewState={initial} minZoom={2} maxZoom={18} />
-        <RadarLayers displayed={radar.displayed} staged={radar.staged} enabled={radar.enabled} opacity={radar.opacity} />
+        <RadarLayers displayed={radar.displayed} staged={radar.staged} cached={radar.cached} enabled={radar.enabled} opacity={radar.opacity} />
         <LightningLayer lightning={lightning} maxAge={lightningMaxAge} />
       </Map></Animated.View>}
       <View style={[styles.top, { top: insets.top + 16 }]} pointerEvents="none">
@@ -187,7 +201,23 @@ export function MapScreen() {
         </View>}
       </View>
     </View>
-    <View style={styles.spacer} pointerEvents="none" />
+    <View style={styles.spacer} pointerEvents="box-none">
+      <View style={styles.mapControls}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Zoom in" accessibilityHint="Increase map zoom"
+          onPress={() => zoomBy(1)} style={styles.mapControl}>
+          <Ionicons name="add" size={24} color={colors.text} />
+        </Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel="Zoom out" accessibilityHint="Decrease map zoom"
+          onPress={() => zoomBy(-1)} style={styles.mapControl}>
+          <Ionicons name="remove" size={24} color={colors.text} />
+        </Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel="Recenter on my location" accessibilityHint="Request location and center the map"
+          accessibilityState={{ disabled: location.busy }} disabled={location.busy} onPress={() => { void location.locate(); }}
+          style={[styles.mapControl, location.busy && styles.mapControlBusy]}>
+          {location.busy ? <ActivityIndicator color={colors.accent} /> : <Ionicons name="locate-outline" size={24} color={colors.text} />}
+        </Pressable>
+      </View>
+    </View>
     <View>
       {location.message && <Text accessibilityLiveRegion="polite" style={styles.feedback}>{location.message}</Text>}
       {themeStorageError && <Text style={styles.feedback}>Theme settings could not be saved.</Text>}
@@ -204,8 +234,7 @@ export function MapScreen() {
     {sheet === 'location' && <LocationPicker current={{ name: placeName, center }} offline={offline} onSelect={selectPlace} onClose={() => setSheet(null)} />}
     {sheet === 'forecast' && forecastPlace && <ForecastSheet place={forecastPlace} offline={offline} onClose={() => setSheet(null)} />}
     {sheet === 'settings' && <ThemeSheet currentLocation={placeName} onChooseLocation={() => openSheet('location')}
-      onZoomIn={() => camera.current?.zoomTo(Math.min(18, current.current.zoom + 1), { duration: 250 })}
-      onZoomOut={() => camera.current?.zoomTo(Math.max(2, current.current.zoom - 1), { duration: 250 })}
+      onZoomIn={() => zoomBy(1)} onZoomOut={() => zoomBy(-1)}
       onClose={() => setSheet(null)} />}
     {sheet === 'warnings' && <WarningsSheet state={warnings} onClose={() => setSheet(null)} />}
     {sheet === 'lightning' && <LightningSheet lightning={lightning} maxAge={lightningMaxAge} setMaxAge={setLightningMaxAge} currentBounds={currentBounds} onClose={() => setSheet(null)} />}
@@ -215,7 +244,11 @@ export function MapScreen() {
 function makeStyles(c: ThemeColors) { return StyleSheet.create({
   screen: { flex: 1, backgroundColor: c.background },
   mapArea: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 },
-  spacer: { flex: 1 },
+  spacer: { flex: 1, justifyContent: 'flex-end', alignItems: 'flex-end' },
+  mapControls: { marginRight: 16, marginBottom: 12, gap: 8 },
+  mapControl: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 16,
+    backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, elevation: 4 },
+  mapControlBusy: { opacity: 0.65 },
   top: { position: 'absolute', left: 20, right: 20, gap: 3 },
   place: { color: c.text, fontSize: 25, fontWeight: '700', textShadowColor: c.surface, textShadowRadius: 5 },
   radarTime: { color: c.text, fontSize: 16, textShadowColor: c.surface, textShadowRadius: 5 },

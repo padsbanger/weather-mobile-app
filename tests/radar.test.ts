@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { formatFrameDate, isStale, parseRadarMetadata, radarTiles, retryDelay } from '../src/providers/rainviewer.ts';
 import { INITIAL_PLAYBACK, nextFrame, playbackReducer } from '../src/features/radar/playback.ts';
+import { PREFETCH_TILE_BUDGET, visibleRadarTileCount } from '../src/features/radar/prefetch.ts';
 
 const now = Date.UTC(2026, 8, 22, 12);
 const seconds = now / 1000;
@@ -63,7 +64,7 @@ test('failed preload retains imagery and pauses; camera cancellation invalidates
   assert.equal(nextFrame([], frames[0]), undefined);
 });
 
-test('duplicate readiness does not restart the playback dwell timer; prepared frame advances atomically', () => {
+test('prepared frames switch immediately without another staged tile load', () => {
   let state = playbackReducer(INITIAL_PLAYBACK, { type: 'select', frame: frames[0] });
   state = playbackReducer(state, { type: 'loaded', id: state.staged!.id });
   state = playbackReducer(state, { type: 'play' });
@@ -71,11 +72,40 @@ test('duplicate readiness does not restart the playback dwell timer; prepared fr
   const id = state.staged!.id;
   state = playbackReducer(state, { type: 'loaded', id });
   assert.equal(state.displayed!.frame, frames[0]);
+  assert.equal(state.cached.length, 2);
   assert.equal(playbackReducer(state, { type: 'loaded', id }), state);
-  state = playbackReducer(state, { type: 'advance' });
+  state = playbackReducer(state, { type: 'show', frame: frames[1] });
   assert.equal(state.displayed!.frame, frames[1]);
   assert.equal(state.staged, null);
   assert.equal(state.playing, true);
+  state = playbackReducer(state, { type: 'show', frame: frames[0] });
+  assert.equal(state.displayed!.frame, frames[0]);
+  assert.equal(state.staged, null);
   state = playbackReducer(state, { type: 'pause' });
   assert.equal(state.playing, false);
+});
+
+test('camera invalidation keeps the visible frame but requires viewport frames to prepare again', () => {
+  let state = playbackReducer(INITIAL_PLAYBACK, { type: 'select', frame: frames[1] });
+  state = playbackReducer(state, { type: 'loaded', id: state.staged!.id });
+  state = playbackReducer(state, { type: 'preload', frame: frames[0] });
+  const cancelled = state.staged!.id;
+  state = playbackReducer(state, { type: 'invalidate' });
+  assert.equal(state.displayed!.frame, frames[1]);
+  assert.equal(state.cached.length, 0);
+  assert.equal(playbackReducer(state, { type: 'loaded', id: cancelled }), state);
+  state = playbackReducer(state, { type: 'cacheDisplayed' });
+  assert.equal(state.cached.length, 1);
+  state = playbackReducer(state, { type: 'preload', frame: frames[0] });
+  state = playbackReducer(state, { type: 'loaded', id: state.staged!.id });
+  assert.equal(state.cached.length, 2);
+  state = playbackReducer(state, { type: 'prune', frames: [frames[1]] });
+  assert.equal(state.cached.length, 1);
+});
+
+test('viewport tile estimate bounds preparation to the current source zoom', () => {
+  assert.equal(visibleRadarTileCount([18.3, 54.3, 18.8, 54.7], 11), 1);
+  assert.equal(visibleRadarTileCount([-180, -85, 180, 85], 7), 128 * 128);
+  assert.ok(visibleRadarTileCount([-180, -85, 180, 85], 7) > PREFETCH_TILE_BUDGET);
+  assert.equal(visibleRadarTileCount([18, 54, 19, 55], Number.NaN), PREFETCH_TILE_BUDGET + 1);
 });
