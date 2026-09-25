@@ -23,7 +23,7 @@ export function playbackReducer(state: Playback, action: PlaybackAction): Playba
     case 'select':
     case 'preload': {
       const wanted = action.type === 'select';
-      if (state.displayed && frameKey(state.displayed.frame) === frameKey(action.frame)) {
+      if (wanted && state.displayed && frameKey(state.displayed.frame) === frameKey(action.frame)) {
         return wanted ? { ...state, playing: false, staged: null, wanted: false, error: false } : state;
       }
       const cached = state.cached.find(slot => frameKey(slot.frame) === frameKey(action.frame));
@@ -41,12 +41,13 @@ export function playbackReducer(state: Playback, action: PlaybackAction): Playba
     case 'loaded':
       if (state.staged?.id !== action.id || state.staged.ready) return state; // Late/duplicate native events.
       return {
-        ...state, displayed: state.wanted ? { ...state.staged, ready: true } : state.displayed,
-        cached: [...state.cached, { ...state.staged, ready: true }], staged: null, wanted: false,
+        ...state, displayed: state.wanted || (state.displayed && frameKey(state.displayed.frame) === frameKey(state.staged.frame))
+          ? { ...state.staged, ready: true } : state.displayed,
+        cached: [...state.cached.filter(slot => frameKey(slot.frame) !== frameKey(state.staged!.frame)), { ...state.staged, ready: true }], staged: null, wanted: false,
       };
     case 'failed':
       if (state.staged?.id !== action.id) return state;
-      return { ...state, staged: null, playing: false, wanted: false, error: true };
+      return { ...state, staged: null, playing: state.wanted ? false : state.playing, wanted: false, error: true };
     case 'play': return { ...state, playing: true, error: false };
     case 'pause': return { ...state, playing: false };
     case 'clearError': return state.error ? { ...state, error: false } : state;

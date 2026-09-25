@@ -1,5 +1,50 @@
 # Milestones
 
+## Mobile radar preparation fix — 2026-09-25
+
+- Fixed the reducer's no-op when preparation requests the displayed frame
+  after viewport invalidation. Reloads get a new source ID and retain the
+  previous image until ready; late readiness cannot duplicate that frame.
+- Prepare newest frames first and play available ready frames without waiting
+  for all history. Failed background preparation preserves playback, defers
+  that frame before retrying, and allows 30 seconds for slow tile loads.
+  Request-budget waits are explicit and resume at the next budget opening.
+- Type checking, lint and 31 tests passed, including invalidation/reload and
+  rolling request-budget regressions. Live RainViewer metadata returned 13
+  frames; an actual tile passed PNG signature and 256×256 dimension checks.
+  Official API/schema pages were rechecked; local conservative request caps
+  remain in place. Phone-specific reproduction is not yet verified.
+- Built and signature-verified `artifacts/weather-radar-release.apk`, then
+  installed it over the existing release on Pixel_10 / Android 16. It launched
+  without a development server. At a wide viewport, actual radar playback
+  advanced with 8/13 frames ready during a budget wait (screenshot:
+  `artifacts/radar-fix-playing.png`). Pan/zoom, background/return, offline
+  retained imagery with paused playback, and preparation after reconnect
+  were exercised. No physical phone, sustained poor-network, or long-soak
+  check was performed. Changes remain uncommitted.
+- Physical follow-up: verified on the user's ASUS Zenfone 9 (Android 14).
+  The installed original showed `Preparing history 2/13`; its signing identity
+  prevented an in-place update. Preserved it and its data, and built a separate
+  `Weather Radar Test` release (`pl.konta.weatherradar.verification`,
+  `artifacts/weather-radar-test.apk`) with the same app code, a separate package
+  ID/label, and the local debug signing identity. Generated native files were
+  restored after building; the regular release APK was not replaced.
+- On the physical phone, fresh loading reached 9/13 and playback visibly
+  advanced from 19:50 to 18:50 during the request-budget wait. Pan, zoom,
+  background/return and Wi-Fi interruption/recovery passed; offline retained
+  the image and paused playback. Preparation subsequently completed for all
+  13 frames, with playback still advancing. Wi-Fi was restored on; mobile
+  data remained off as originally configured. Evidence:
+  `artifacts/phone-fixed-playing-1.png`, `phone-fixed-playing-2.png`,
+  `phone-fixed-offline.xml` and `phone-fixed-recovered.png`.
+  Sustained poor-network and long-soak checks remain unverified.
+
+## Initial map zoom — 2026-09-24 — awaiting review
+
+- Changed the fresh-install Gdynia camera zoom from 9 to 4. Persisted camera
+  positions still take precedence on later launches. Type checking and the
+  focused camera test passed; this change was not checked on a device.
+
 ## Launcher icon — 2026-09-24 — awaiting review
 
 - Installed the user's uploaded cloud, radar and rain PNG byte for byte as

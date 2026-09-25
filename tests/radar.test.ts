@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { formatFrameDate, isStale, parseRadarMetadata, radarTiles, retryDelay } from '../src/providers/rainviewer.ts';
 import { INITIAL_PLAYBACK, nextFrame, playbackReducer } from '../src/features/radar/playback.ts';
-import { PREFETCH_TILE_BUDGET, visibleRadarTileCount } from '../src/features/radar/prefetch.ts';
+import { PREFETCH_TILE_BUDGET, prefetchWaitUntil, visibleRadarTileCount } from '../src/features/radar/prefetch.ts';
 
 const now = Date.UTC(2026, 8, 22, 12);
 const seconds = now / 1000;
@@ -48,7 +48,7 @@ test('keeps displayed frame until matching readiness; ignores cancelled scrub ev
   state = playbackReducer(state, { type: 'loaded', id: state.staged!.id });
   assert.equal(state.displayed!.frame, frames[0]);
 });
-test('failed preload retains imagery and pauses; camera cancellation invalidates pending frame; wraps only available frames', () => {
+test('failed background preload retains imagery and playback; cancellation invalidates pending frame; wraps only available frames', () => {
   let state = playbackReducer(INITIAL_PLAYBACK, { type: 'select', frame: frames[0] });
   state = playbackReducer(state, { type: 'loaded', id: state.staged!.id });
   state = playbackReducer(state, { type: 'play' });
@@ -58,10 +58,37 @@ test('failed preload retains imagery and pauses; camera cancellation invalidates
   assert.equal(playbackReducer(cancelled, { type: 'loaded', id: pending }), cancelled);
   state = playbackReducer(state, { type: 'failed', id: pending });
   assert.equal(state.displayed!.frame, frames[0]);
-  assert.equal(state.playing, false);
+  assert.equal(state.playing, true);
   assert.equal(state.error, true);
   assert.equal(nextFrame(frames, frames[1]), frames[0]);
   assert.equal(nextFrame([], frames[0]), undefined);
+});
+
+test('displayed frame can prepare again after camera invalidation without relying on another render event', () => {
+  let state = playbackReducer(INITIAL_PLAYBACK, { type: 'select', frame: frames[0] });
+  state = playbackReducer(state, { type: 'loaded', id: state.staged!.id });
+  const oldId = state.displayed!.id;
+  state = playbackReducer(state, { type: 'invalidate' });
+  state = playbackReducer(state, { type: 'preload', frame: frames[0] });
+  assert.ok(state.staged);
+  assert.notEqual(state.staged.id, oldId);
+  assert.equal(state.displayed!.id, oldId);
+  // An old native callback arriving during the reload must not create duplicates.
+  const pendingId = state.staged.id;
+  state = playbackReducer(state, { type: 'cacheDisplayed' });
+  state = playbackReducer(state, { type: 'loaded', id: pendingId });
+  assert.equal(state.cached.length, 1);
+  assert.notEqual(state.displayed!.id, oldId);
+  assert.equal(state.staged, null);
+});
+
+test('request budget resumes exactly when enough reservations expire', () => {
+  const requests = [{ at: 1000, tiles: 20 }, { at: 5000, tiles: 40 }];
+  assert.equal(prefetchWaitUntil(requests, 4, 10000), 0);
+  assert.equal(prefetchWaitUntil(requests, 20, 10000), 61000);
+  assert.equal(prefetchWaitUntil(requests, 30, 10000), 65000);
+  assert.equal(prefetchWaitUntil(requests, 20, 61000), 0);
+  assert.equal(prefetchWaitUntil(requests, 64, 65000), 0);
 });
 
 test('prepared frames switch immediately without another staged tile load', () => {

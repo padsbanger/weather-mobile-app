@@ -5,7 +5,7 @@ import { NetworkManager } from '@maplibre/maplibre-react-native';
 import { frameKey, type RadarFrame } from '../../providers/rainviewer';
 import { INITIAL_PLAYBACK, nextFrame, playbackReducer } from './playback';
 import { useRadarMetadata } from './useRadarMetadata';
-import { PREFETCH_TILE_BUDGET, visibleRadarTileCount, type RadarBounds } from './prefetch';
+import { PREFETCH_TILE_BUDGET, prefetchWaitUntil, visibleRadarTileCount, type RadarBounds } from './prefetch';
 
 const PREFERENCES = 'weather-radar.radar-preferences.v1';
 export function useRadar(offline: boolean) {
@@ -18,6 +18,7 @@ export function useRadar(offline: boolean) {
   const [viewportLoading, setViewportLoading] = useState(false);
   const [tileError, setTileError] = useState(false);
   const [retryAt, setRetryAt] = useState(0);
+  const [budgetWaitUntil, setBudgetWaitUntil] = useState(0);
   const [tilesPerFrame, setTilesPerFrame] = useState(4);
   const [now, setNow] = useState(() => Date.now());
   const [state, dispatch] = useReducer(playbackReducer, INITIAL_PLAYBACK);
@@ -26,6 +27,7 @@ export function useRadar(offline: boolean) {
   const movingRef = useRef(false);
   const fullFrameReady = useRef(false);
   const prefetchRequests = useRef<{ at: number; tiles: number }[]>([]);
+  const failedUntil = useRef(new Map<string, number>());
   const writes = useRef(Promise.resolve());
   const cameraSettle = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => { if (cameraSettle.current) clearTimeout(cameraSettle.current); }, []);
@@ -68,9 +70,15 @@ export function useRadar(offline: boolean) {
   const frames = useMemo(() => metadata.data?.frames ?? [], [metadata.data]);
   const cachedKeys = useMemo(() => new Set(state.cached.map(slot => frameKey(slot.frame))), [state.cached]);
   const preparedCount = frames.filter(frame => cachedKeys.has(frameKey(frame))).length;
+  const readyFrames = useMemo(() => frames.filter(frame => cachedKeys.has(frameKey(frame))), [frames, cachedKeys]);
   const allPrepared = frames.length > 0 && preparedCount === frames.length;
   const preparing = canLoad && !offline && !!state.displayed && !allPrepared && !state.error;
   const preloadLimited = Math.max(2, tilesPerFrame * 2) > PREFETCH_TILE_BUDGET;
+  useEffect(() => {
+    if (!budgetWaitUntil || !canLoad || offline) return;
+    const timer = setTimeout(() => setBudgetWaitUntil(0), Math.max(0, budgetWaitUntil - Date.now()));
+    return () => clearTimeout(timer);
+  }, [budgetWaitUntil, canLoad, offline]);
   useEffect(() => {
     if (!retryAt || !active || offline) return;
     const timer = setTimeout(() => {
@@ -79,7 +87,11 @@ export function useRadar(offline: boolean) {
     return () => clearTimeout(timer);
   }, [retryAt, active, offline]);
   useEffect(() => {
-    if (metadata.data) dispatch({ type: 'prune', frames: metadata.data.frames });
+    if (metadata.data) {
+      dispatch({ type: 'prune', frames: metadata.data.frames });
+      const keys = new Set(metadata.data.frames.map(frameKey));
+      for (const key of failedUntil.current.keys()) if (!keys.has(key)) failedUntil.current.delete(key);
+    }
   }, [metadata.data]);
   useEffect(() => {
     if (!canLoad || !preferencesReady) { dispatch({ type: 'cancel' }); return; }
@@ -90,30 +102,34 @@ export function useRadar(offline: boolean) {
   }, [canLoad, preferencesReady, metadata.data, state.displayed, state.staged, state.error]);
   useEffect(() => {
     if (!canLoad || offline || !state.displayed || state.staged || state.error || allPrepared || retryAt > now || preloadLimited) return;
-    const next = frames.find(frame => !cachedKeys.has(frameKey(frame)));
+    const next = [...frames].reverse().find(frame => !cachedKeys.has(frameKey(frame)) &&
+      (failedUntil.current.get(frameKey(frame)) ?? 0) <= Date.now());
     if (!next) return;
     const cutoff = Date.now() - 60_000;
     prefetchRequests.current = prefetchRequests.current.filter(entry => entry.at > cutoff);
-    const used = prefetchRequests.current.reduce((total, entry) => total + entry.tiles, 0);
     const estimatedRequests = Math.max(2, tilesPerFrame * 2);
-    if (used + estimatedRequests > PREFETCH_TILE_BUDGET) return;
+    const waitUntil = prefetchWaitUntil(prefetchRequests.current, estimatedRequests, Date.now());
+    setBudgetWaitUntil(waitUntil);
+    if (waitUntil) return;
     prefetchRequests.current.push({ at: Date.now(), tiles: estimatedRequests });
     dispatch({ type: 'preload', frame: next });
-  }, [canLoad, offline, state.displayed, state.staged, state.error, frames, cachedKeys, allPrepared, retryAt, now, tilesPerFrame, preloadLimited]);
+  }, [canLoad, offline, state.displayed, state.staged, state.error, frames, cachedKeys, allPrepared, retryAt, now, tilesPerFrame, preloadLimited, budgetWaitUntil]);
   useEffect(() => {
-    if (!canLoad || offline || !state.playing || !allPrepared || !state.displayed || frames.length < 2) return;
-    const next = nextFrame(frames, state.displayed.frame);
+    if (!canLoad || offline || !state.playing || !state.displayed || readyFrames.length < 2) return;
+    const next = nextFrame(readyFrames, state.displayed.frame);
     if (!next) return;
     const timer = setTimeout(() => dispatch({ type: 'show', frame: next }), 850);
     return () => clearTimeout(timer);
-  }, [canLoad, offline, state.playing, allPrepared, state.displayed, frames]);
+  }, [canLoad, offline, state.playing, state.displayed, readyFrames]);
   useEffect(() => {
     if (!state.staged || state.staged.ready) return;
     const id = state.staged.id;
+    const key = frameKey(state.staged.frame);
     const timer = setTimeout(() => {
+      failedUntil.current.set(key, Date.now() + 60000);
       setRetryAt(Date.now() + 30000);
       dispatch({ type: 'failed', id });
-    }, 12000);
+    }, 30000);
     return () => clearTimeout(timer);
   }, [state.staged]);
   useEffect(() => {
@@ -143,8 +159,10 @@ export function useRadar(offline: boolean) {
     setTileError(true);
     setRetryAt(Date.now() + (/429|budget|rate.limit/i.test(message) ? 60000 : 30000));
     const staged = live.current.staged;
-    if (staged) dispatch({ type: 'failed', id: staged.id });
-    dispatch({ type: 'pause' });
+    if (staged) {
+      failedUntil.current.set(frameKey(staged.frame), Date.now() + 90000);
+      dispatch({ type: 'failed', id: staged.id });
+    }
   }, []);
   function select(frame: RadarFrame) { setTileError(false); dispatch({ type: 'select', frame }); }
   function togglePlay() {
@@ -168,6 +186,6 @@ export function useRadar(offline: boolean) {
     }, 350);
   }
   return { ...metadata, ...state, metadataError: metadata.error, playbackError: state.error, active, enabled, setEnabled, opacity, setOpacity, now, offline,
-    preferenceError, viewportLoading, tileError, retryAt, preparedCount, allPrepared, preparing, preloadLimited, select, togglePlay,
+    preferenceError, viewportLoading, tileError, retryAt, budgetWaitUntil, preparedCount, allPrepared, preparing, preloadLimited, select, togglePlay,
     cameraStart, cameraEnd, markDisplayReady, invalidatePrepared, onFullyRendered, onTileError };
 }

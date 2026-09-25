@@ -3,6 +3,18 @@ import { RADAR_SOURCE_ZOOM } from '../../providers/rainviewer.ts';
 export const PREFETCH_TILE_BUDGET = 64; // Leave room below the native 80/minute guard.
 export type RadarBounds = readonly [west: number, south: number, east: number, north: number];
 
+export type TileReservation = { at: number; tiles: number };
+export function prefetchWaitUntil(requests: TileReservation[], tiles: number, now: number): number {
+  const pending = requests.filter(entry => entry.at > now - 60_000).sort((a, b) => a.at - b.at);
+  let used = pending.reduce((total, entry) => total + entry.tiles, 0);
+  for (const entry of pending) {
+    if (used + tiles <= PREFETCH_TILE_BUDGET) return 0;
+    used -= entry.tiles;
+    if (used + tiles <= PREFETCH_TILE_BUDGET) return entry.at + 60_000;
+  }
+  return 0;
+}
+
 export function visibleRadarTileCount(bounds: RadarBounds, zoom: number): number {
   const [west, south, east, north] = bounds;
   if (![...bounds, zoom].every(Number.isFinite) || south > north || west < -180 || west > 180 ||

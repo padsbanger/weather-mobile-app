@@ -34,8 +34,8 @@ export function RadarPanel({ radar, activeAction, warningActive, warningColor, w
   const index = selected ? frames.findIndex(frame => frameKey(frame) === frameKey(selected)) : -1;
   const newestStale = newest ? isStale(newest.time, radar.now) : displayed ? isStale(displayed.time, radar.now) : false;
   const coolingDown = radar.retryAt > radar.now;
-  const playbackDisabled = !radar.enabled || radar.offline || coolingDown || frames.length < 2 ||
-    (radar.preloadLimited && !radar.allPrepared && !radar.playing);
+  const playbackDisabled = !radar.enabled || radar.offline || frames.length < 2 ||
+    (!radar.playing && radar.preparedCount < 2 && (coolingDown || radar.preloadLimited));
   const hasIssue = !!(radar.offline || radar.metadataError || newestStale || radar.tileError || radar.playbackError || coolingDown ||
     (radar.data !== null && !frames.length));
   const status = !radar.enabled ? 'Hidden' : radar.offline ? 'Offline' : newestStale ? 'Outdated' : displayed && isStale(displayed.time, radar.now) ? 'Historical' : newest ? 'Recent' : 'Loading';
@@ -50,7 +50,10 @@ export function RadarPanel({ radar, activeAction, warningActive, warningColor, w
     !!radar.data?.rejected && 'Partial history',
     !radar.displayed && radar.loading && 'Loading radar',
     radar.displayed && radar.viewportLoading && 'Loading map tiles',
-    radar.preparing && (radar.preloadLimited ? 'Zoom in to prepare history' : `Preparing history ${radar.preparedCount}/${frames.length}`),
+    radar.preparing && (radar.preloadLimited ? 'Zoom in to prepare history' : radar.budgetWaitUntil > radar.now
+      ? `History ${radar.preparedCount}/${frames.length} ready · waiting for request budget`
+      : `Preparing history ${radar.preparedCount}/${frames.length}`),
+    radar.playing && !radar.allPrepared && radar.preparedCount >= 2 && 'Playing available frames',
     'Coverage unverified',
   ].filter(Boolean).join(' · ');
   const actions = [

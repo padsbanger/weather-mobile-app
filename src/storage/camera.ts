@@ -1,5 +1,5 @@
 export type SavedCamera = { center: [number, number]; zoom: number };
-export const DEFAULT_CAMERA: SavedCamera = { center: [18.538, 54.5189], zoom: 9 };
+export const DEFAULT_CAMERA: SavedCamera = { center: [18.538, 54.5189], zoom: 4 };
 export const CAMERA_KEY = 'weather-radar.camera.v1';
 
 export function parseCamera(value: unknown): SavedCamera | null {
